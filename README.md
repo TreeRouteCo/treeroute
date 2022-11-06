@@ -1,16 +1,9 @@
-# treeroute
+## Welcome to TreeRoute's Repo 👋
 
-A new Flutter project.
+![Banner](https://user-images.githubusercontent.com/29983481/200153895-3edbcd18-80f7-44cc-8338-3d86328e7d72.svg)
 
-## Getting Started
+We're one a mission to build the ultimate campus map for Stanford (and others?). Get where you need to get quickly and without stressing, with our community built map whatever obscure name your friends comes up with, you'll get there..
 
-This project is a starting point for a Flutter application.
+Want to join us and you're from Stanford? https://forms.gle/w39popqKmb1vQm138 - No experience required!
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Want to join us from outside Stanford? Start contributing to our app, that simple!
