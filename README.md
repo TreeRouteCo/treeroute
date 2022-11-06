@@ -1,6 +1,6 @@
 ## Welcome to TreeRoute's Repo 👋
 
-![Banner](https://user-images.githubusercontent.com/29983481/200153895-3edbcd18-80f7-44cc-8338-3d86328e7d72.svg)
+![Letter - 3](https://user-images.githubusercontent.com/29983481/200158224-f48f1b6e-041f-40ad-8600-1920426159bb.svg)
 
 We're one a mission to build the ultimate campus map for Stanford (and others?). Get where you need to get quickly and without stressing, with our community built map whatever obscure name your friends comes up with, you'll get there..
 
