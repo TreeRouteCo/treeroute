@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:treeroute/pages/map.dart';
+import 'package:treeroute/providers/providers.dart';
 import 'package:treeroute/theme/dark_theme.dart';
 import 'package:treeroute/theme/light_theme.dart';
 
@@ -66,6 +67,8 @@ class NavigationWrapper extends HookConsumerWidget {
         Beamer.of(context).beamToNamed("/locSharing");
       }
     });*/
+
+    ref.read(locationProvider.notifier).init();
 
     return MaterialApp.router(
       routeInformationParser: BeamerParser(),

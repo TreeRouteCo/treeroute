@@ -9,10 +9,12 @@ import 'package:beamer/beamer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart' as here_core;
+import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart' as here_map;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:here_sdk/private/heresdk.dart';
 
 import '../theme/light_theme.dart';
 import '../widgets/common/location_access_expl.dart';
@@ -313,5 +315,22 @@ class LocationProvider extends StateNotifier<LocationState> {
         here_map.MapPolyline(geoPolyline, widthInPixels, lineColor);
 
     return mapPolyline;
+  }
+
+  void init() async {
+    // Needs to be called before accessing SDKOptions to load necessary libraries.
+    here_core.SdkContext.init(here_core.IsolateOrigin.main);
+
+    // Set your credentials for the HERE SDK.
+    String accessKeyId = HERESDKKeys.appKeyId;
+    String accessKeySecret = HERESDKKeys.appKeySecret;
+    SDKOptions sdkOptions =
+        SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
+
+    try {
+      await SDKNativeEngine.makeSharedInstance(sdkOptions);
+    } on InstantiationException {
+      throw Exception("Failed to initialize the HERE SDK.");
+    }
   }
 }
