@@ -17,7 +17,7 @@ class AppBarCard extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
-              Logo(width: 100),
+              BrandIcon(width: 100),
             ],
           ),
         ),

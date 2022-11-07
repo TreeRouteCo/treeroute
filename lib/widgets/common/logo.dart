@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class Logo extends StatelessWidget {
+class BrandIcon extends StatelessWidget {
   final double width;
 
-  const Logo({this.width = 200, Key? key}) : super(key: key);
+  const BrandIcon({this.width = 200, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -12,11 +12,11 @@ class Logo extends StatelessWidget {
       tag: "logo",
       child: (Theme.of(context).brightness == Brightness.dark)
           ? SvgPicture.asset(
-              "assets/gatego_logo_dark.svg",
+              "assets/icon_dark.svg",
               width: width,
             )
           : SvgPicture.asset(
-              "assets/gatego_logo.svg",
+              "assets/icon_lightFLOF.svg",
               width: width,
             ),
     );
