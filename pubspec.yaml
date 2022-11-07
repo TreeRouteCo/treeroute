@@ -42,7 +42,10 @@ dependencies:
       ref: master
   here_sdk:
     path: plugins/heresdk
-  riverpod: ^2.1.1
+  beamer: ^1.5.3
+  permission_handler: ^10.2.0
+  hooks_riverpod: ^2.1.1
+  flutter_svg: ^1.1.6
 
 dev_dependencies:
   flutter_test:
