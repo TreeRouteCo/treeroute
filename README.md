@@ -1,4 +1,4 @@
-## Welcome to TreeRoute's Repo 👋
+# Welcome to TreeRoute's Repo 👋
 
 ![Letter - 3](https://user-images.githubusercontent.com/29983481/200158251-df65f025-8e37-4fb1-969c-ae97b531f3e6.svg)
 
@@ -8,3 +8,6 @@ Want to join us and you're from Stanford? https://forms.gle/w39popqKmb1vQm138 - 
 
 Want to join us from outside Stanford? Start contributing to our app, that simple!
 
+## The `plugins` directory
+
+Unfortunately we cannot make TreeRoute 100% open-source as we use the HERE SDK for mapping, but we are not allowed to publish this. As a result, in order to compile TreeRoute, you must download the SDK from their platform: <https://platform.here.com/> and use your own API key.
