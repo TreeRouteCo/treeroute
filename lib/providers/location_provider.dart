@@ -14,7 +14,7 @@ import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart' as here_map;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:here_sdk/private/heresdk.dart';
+import 'package:here_sdk/private/keys.dart';
 
 import '../theme/light_theme.dart';
 import '../widgets/common/location_access_expl.dart';
@@ -176,7 +176,7 @@ class LocationProvider extends StateNotifier<LocationState> {
                     return AlertDialog(
                       title: const Text("Access to Location"),
                       content: const Text(
-                          "It seems you have permanently denied gatego access to your location."
+                          "It seems you have permanently denied TreeRoute access to your location."
                           " To be able to track your drive we need permission to access it."
                           " Click the button below to open the settings, then change the location"
                           " permission to 'While in Use'"),
@@ -332,5 +332,11 @@ class LocationProvider extends StateNotifier<LocationState> {
     } on InstantiationException {
       throw Exception("Failed to initialize the HERE SDK.");
     }
+  }
+
+  void disposeHERESDK() async {
+    // Free HERE SDK resources before the application shuts down.
+    await SDKNativeEngine.sharedInstance?.dispose();
+    here_core.SdkContext.release();
   }
 }

@@ -15,9 +15,11 @@ class AppBarCard extends ConsumerWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: const [
-              BrandIcon(width: 100),
+              BrandIcon(width: 30),
+              SizedBox(width: 10),
+              Text("TreeRoute", style: TextStyle(fontSize: 20)),
             ],
           ),
         ),

@@ -16,7 +16,7 @@ class BrandIcon extends StatelessWidget {
               width: width,
             )
           : SvgPicture.asset(
-              "assets/icon_lightFLOF.svg",
+              "assets/icon_light.svg",
               width: width,
             ),
     );

@@ -1,16 +1,36 @@
 import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
+import 'package:here_sdk/core.engine.dart';
+import 'package:here_sdk/core.errors.dart';
+import 'package:here_sdk/private/keys.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:treeroute/pages/map.dart';
 import 'package:treeroute/providers/providers.dart';
 import 'package:treeroute/theme/dark_theme.dart';
 import 'package:treeroute/theme/light_theme.dart';
 
-void main() {
-  SdkContext.init(IsolateOrigin.main);
+void main() async {
+  await _initializeHERESDK();
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
+}
+
+Future<void> _initializeHERESDK() async {
+  // Needs to be called before accessing SDKOptions to load necessary libraries.
+  SdkContext.init(IsolateOrigin.main);
+
+  // Set your credentials for the HERE SDK.
+  String accessKeyId = HERESDKKeys.appKeyId;
+  String accessKeySecret = HERESDKKeys.appKeySecret;
+  SDKOptions sdkOptions =
+      SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
+
+  try {
+    await SDKNativeEngine.makeSharedInstance(sdkOptions);
+  } on InstantiationException {
+    throw Exception("Failed to initialize the HERE SDK.");
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -68,7 +88,7 @@ class NavigationWrapper extends HookConsumerWidget {
       }
     });*/
 
-    ref.read(locationProvider.notifier).init();
+    //ref.read(locationProvider.notifier).init();
 
     return MaterialApp.router(
       routeInformationParser: BeamerParser(),
