@@ -26,8 +26,6 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>MGLMapboxAccessToken</key>
-	<string>pk.eyJ1IjoiZW1vcmVub2EiLCJhIjoiY2xhMG1lMDd0MDFrODN2bDhpcHdyeHdlMCJ9.hbm5kBxzBuT4irSo9MvNFw</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Shows your location on the map and helps improve app maps</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
