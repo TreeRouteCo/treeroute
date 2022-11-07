@@ -20,7 +20,7 @@ class LocationAccessCard extends HookConsumerWidget {
               const SizedBox(
                 height: 20,
               ),
-              const BrandIcon(
+              const Icon(
                 Icons.share_location_rounded,
                 size: 80,
               ),
@@ -93,7 +93,7 @@ class LocationAccessCard extends HookConsumerWidget {
                   ),
                 ),
                 onPressed: callback,
-                label: const BrandIcon(
+                label: const Icon(
                   Icons.check_circle_rounded,
                   color: Colors.white,
                   size: 18,
