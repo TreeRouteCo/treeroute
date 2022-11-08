@@ -4,6 +4,8 @@ PODS:
   - Flutter (1.0.0)
   - here_sdk (4.12.9.0.9828.release):
     - Flutter
+  - location (0.0.1):
+    - Flutter
   - permission_handler_apple (9.0.4):
     - Flutter
   - wakelock (0.0.1):
@@ -13,6 +15,7 @@ DEPENDENCIES:
   - background_location (from `.symlinks/plugins/background_location/ios`)
   - Flutter (from `Flutter`)
   - here_sdk (from `.symlinks/plugins/here_sdk/ios`)
+  - location (from `.symlinks/plugins/location/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - wakelock (from `.symlinks/plugins/wakelock/ios`)
 
@@ -23,6 +26,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   here_sdk:
     :path: ".symlinks/plugins/here_sdk/ios"
+  location:
+    :path: ".symlinks/plugins/location/ios"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
   wakelock:
@@ -32,9 +37,10 @@ SPEC CHECKSUMS:
   background_location: 1b80c1fe3abd9912bca298618f6e365abf6f588f
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
   here_sdk: d7871808b3b9217fd55286bf2fd9e2375a1ee084
+  location: 3a2eed4dd2fab25e7b7baf2a9efefe82b512d740
   permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce
   wakelock: d0fc7c864128eac40eba1617cb5264d9c940b46f
 
-PODFILE CHECKSUM: 9454f986cdc14825d1c7c94582a774ccf7afd8b1
+PODFILE CHECKSUM: cc1f88378b4bfcf93a6ce00d2c587857c6008d3b
 
 COCOAPODS: 1.11.3
