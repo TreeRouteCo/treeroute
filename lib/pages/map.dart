@@ -10,7 +10,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../widgets/map/appbar_card.dart';
 import '../widgets/map/focus_on_map_fab.dart';
 import '../widgets/map/speed_indicator.dart';
-import '../widgets/map/tracking_status_card.dart';
+import '../widgets/map/search_card.dart';
 
 class MapPage extends StatefulHookConsumerWidget {
   const MapPage({Key? key}) : super(key: key);
@@ -52,7 +52,7 @@ class _MapPageState extends ConsumerState<MapPage> {
                 right: 0,
                 child: HereMap(onMapCreated: _onMapCreated),
               ),
-              const AppBarCard(),
+              //const AppBarCard(),
               if (!locationState.shouldFly && locationState.isLocating)
                 const Positioned(
                   bottom: 90,
@@ -63,7 +63,7 @@ class _MapPageState extends ConsumerState<MapPage> {
                 bottom: 0,
                 left: 0,
                 right: 0,
-                child: TrackingStatusCard(),
+                child: SearchCard(),
               ),
               if (locationState.latestLocation?.speed != null &&
                   locationState.isLocating)
@@ -132,6 +132,10 @@ class _MapPageState extends ConsumerState<MapPage> {
         (permissionStatus == PermissionStatus.granted ||
             permissionStatus == PermissionStatus.grantedLimited)) {
       locationStateNotifier.startLocating();
+    } else if (permissionStatus == PermissionStatus.denied ||
+        permissionStatus == PermissionStatus.deniedForever) {
+      // ignore: use_build_context_synchronously
+      locationStateNotifier.launchPermission(context);
     }
   }
 }

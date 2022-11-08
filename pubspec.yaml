@@ -44,6 +44,7 @@ dependencies:
   flutter_svg: ^1.1.6
   location: ^4.4.0
   flutter_compass: ^0.7.0
+  flutter_hooks: ^0.18.5+1
 
 dev_dependencies:
   flutter_test:

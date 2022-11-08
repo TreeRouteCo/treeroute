@@ -7,7 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:here_sdk/core.dart' as here_core;
 import 'package:here_sdk/core.engine.dart';
+import 'package:here_sdk/core.threading.dart';
 import 'package:here_sdk/mapview.dart' as here_map;
+import 'package:here_sdk/search.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:location/location.dart';
 
@@ -17,6 +19,7 @@ class LocationState {
   bool isLocating;
   PermissionStatus? permissionState;
   here_map.HereMapController? mapController;
+  SearchEngine searchEngine;
   LocationData? latestLocation;
   Location locator;
   bool shouldFly;
@@ -30,6 +33,7 @@ class LocationState {
     this.latestLocation,
     required this.locator,
     this.shouldFly = true,
+    required this.searchEngine,
     required this.lastLines,
     this.compass,
   });
@@ -43,6 +47,7 @@ class LocationState {
     bool? shouldFly,
     List<here_core.GeoCoordinates>? lastLines,
     CompassEvent? compass,
+    SearchEngine? searchEngine,
   }) {
     return LocationState(
       isLocating: isLocating ?? this.isLocating,
@@ -53,6 +58,7 @@ class LocationState {
       shouldFly: shouldFly ?? this.shouldFly,
       lastLines: lastLines ?? this.lastLines,
       compass: compass ?? this.compass,
+      searchEngine: searchEngine ?? this.searchEngine,
     );
   }
 
@@ -73,6 +79,7 @@ class LocationState {
         other.locator == locator &&
         other.shouldFly == shouldFly &&
         listEquals(other.lastLines, lastLines) &&
+        searchEngine == other.searchEngine &&
         other.compass == compass;
   }
 
@@ -85,6 +92,7 @@ class LocationState {
         locator.hashCode ^
         shouldFly.hashCode ^
         lastLines.hashCode ^
+        searchEngine.hashCode ^
         compass.hashCode;
   }
 }
@@ -96,6 +104,7 @@ class LocationProvider extends StateNotifier<LocationState> {
           permissionState: null,
           lastLines: [],
           locator: Location(),
+          searchEngine: SearchEngine(),
         ));
   final Ref ref;
   here_map.LocationIndicator? _locIndicator;
@@ -153,6 +162,8 @@ class LocationProvider extends StateNotifier<LocationState> {
                       ],
                     );
                   });
+            } else {
+              startLocating();
             }
             state = state.copyWith(permissionState: status);
           });
@@ -170,6 +181,7 @@ class LocationProvider extends StateNotifier<LocationState> {
         isLocating: false,
         lastLines: [],
         locator: Location(),
+        searchEngine: state.searchEngine,
       );
     }
   }
@@ -240,6 +252,25 @@ class LocationProvider extends StateNotifier<LocationState> {
     // Free HERE SDK resources before the application shuts down.
     await SDKNativeEngine.sharedInstance?.dispose();
     here_core.SdkContext.release();
+  }
+
+  TaskHandle searchSuggestions(
+    String text,
+    void Function(SearchError? error, List<Suggestion>? suggestions) callback,
+  ) {
+    here_core.GeoCoordinates centerGeoCoordinates = here_core.GeoCoordinates(
+      state.latestLocation?.latitude ?? 0,
+      state.latestLocation?.longitude ?? 0,
+    );
+
+    SearchOptions searchOptions = SearchOptions.withDefaults();
+    searchOptions.languageCode = here_core.LanguageCode.enUs;
+    searchOptions.maxItems = 5;
+
+    TextQueryArea queryArea = TextQueryArea.withCenter(centerGeoCoordinates);
+
+    return state.searchEngine
+        .suggest(TextQuery.withArea(text, queryArea), searchOptions, callback);
   }
 
   void loadCustomMapStyle(bool dark) {

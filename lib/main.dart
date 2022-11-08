@@ -94,7 +94,7 @@ class NavigationWrapper extends HookConsumerWidget {
       routerDelegate: ref.watch(beamerDelegateProvider),
       title: 'TreeRoute',
       theme: lightTheme(),
-      darkTheme: darkTheme(),
+      //darkTheme: darkTheme(),
     );
   }
 }
