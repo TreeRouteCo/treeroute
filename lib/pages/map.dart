@@ -23,6 +23,17 @@ class _MapPageState extends ConsumerState<MapPage> {
   @override
   Widget build(BuildContext context) {
     final locationState = ref.watch(locationProvider);
+    final locationStateNotifier = ref.read(locationProvider.notifier);
+
+    if (locationStateNotifier.darkModeMap != null) {
+      if (locationStateNotifier.darkModeMap! &&
+          Theme.of(context).brightness == Brightness.light) {
+        locationStateNotifier.loadCustomMapStyle(false);
+      } else if (!locationStateNotifier.darkModeMap! &&
+          Theme.of(context).brightness == Brightness.dark) {
+        locationStateNotifier.loadCustomMapStyle(true);
+      }
+    }
 
     Wakelock.enable();
 
@@ -72,14 +83,10 @@ class _MapPageState extends ConsumerState<MapPage> {
     final locationState = ref.read(locationProvider);
     final locationStateNotifier = ref.read(locationProvider.notifier);
 
-    hereMapController.mapScene.loadSceneForMapScheme(
-        Theme.of(context).brightness == Brightness.light
-            ? MapScheme.normalDay
-            : MapScheme.normalNight, (MapError? error) {
-      if (error != null) {
-        return;
-      }
-    });
+    ref.read(locationProvider).mapController = hereMapController;
+
+    locationStateNotifier
+        .loadCustomMapStyle(Theme.of(context).brightness == Brightness.dark);
 
     var shouldFly = ref.read(locationProvider).shouldFly;
 
@@ -114,8 +121,6 @@ class _MapPageState extends ConsumerState<MapPage> {
         MapMeasure(MapMeasureKind.zoomLevel, 15));
     hereMapController.setWatermarkPlacement(
         WatermarkPlacement.bottomCenter, 13);
-
-    ref.read(locationProvider).mapController = hereMapController;
 
     late final PermissionStatus permissionStatus;
 

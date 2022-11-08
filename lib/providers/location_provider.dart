@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
+import 'dart:io';
 
 import 'package:beamer/beamer.dart';
 import 'package:flutter/foundation.dart';
@@ -99,6 +99,7 @@ class LocationProvider extends StateNotifier<LocationState> {
         ));
   final Ref ref;
   here_map.LocationIndicator? _locIndicator;
+  bool? darkModeMap;
 
   Future<PermissionStatus> checkPermission() async {
     state = state.copyWith(
@@ -239,5 +240,17 @@ class LocationProvider extends StateNotifier<LocationState> {
     // Free HERE SDK resources before the application shuts down.
     await SDKNativeEngine.sharedInstance?.dispose();
     here_core.SdkContext.release();
+  }
+
+  void loadCustomMapStyle(bool dark) {
+    state.mapController?.mapScene.loadSceneFromConfigurationFile(
+        "assets/maps/v1-${dark ? "night" : "day"}.json",
+        (here_map.MapError? error) {
+      if (error == null) {
+        darkModeMap = dark;
+      } else {
+        throw error;
+      }
+    });
   }
 }
