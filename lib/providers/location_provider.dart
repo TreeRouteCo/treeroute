@@ -2,9 +2,9 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:html';
 import 'dart:isolate';
 
-import 'package:background_location/background_location.dart';
 import 'package:beamer/beamer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +13,7 @@ import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart' as here_map;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:location/location.dart';
 import 'package:here_sdk/private/keys.dart';
 
 import '../theme/light_theme.dart';
@@ -22,77 +22,47 @@ import 'providers.dart';
 
 class LocationState {
   bool isLocating;
-  bool isPermissionGranted;
-  bool isAwaitingPermissions;
+  PermissionStatus? permissionState;
   here_map.HereMapController? mapController;
-  Location? latestLocation;
+  LocationData? latestLocation;
+  Location locator;
   bool shouldFly;
   List<here_core.GeoCoordinates> lastLines;
 
   LocationState({
     required this.isLocating,
-    required this.isPermissionGranted,
-    required this.isAwaitingPermissions,
+    this.permissionState,
     this.mapController,
     this.latestLocation,
+    required this.locator,
     this.shouldFly = true,
     required this.lastLines,
   });
 
   LocationState copyWith({
     bool? isLocating,
-    bool? isPermissionGranted,
+    PermissionStatus? permissionState,
     bool? isAwaitingPermissions,
     here_map.HereMapController? mapController,
-    Location? latestLocation,
+    LocationData? latestLocation,
+    Location? locator,
     bool? shouldFly,
     List<here_core.GeoCoordinates>? lastLines,
   }) {
     return LocationState(
       isLocating: isLocating ?? this.isLocating,
-      isPermissionGranted: isPermissionGranted ?? this.isPermissionGranted,
-      isAwaitingPermissions:
-          isAwaitingPermissions ?? this.isAwaitingPermissions,
+      permissionState: permissionState ?? this.permissionState,
       mapController: mapController ?? this.mapController,
       latestLocation: latestLocation ?? this.latestLocation,
+      locator: locator ?? this.locator,
       shouldFly: shouldFly ?? this.shouldFly,
       lastLines: lastLines ?? this.lastLines,
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'isLocating': isLocating,
-      'isPermissionGranted': isPermissionGranted,
-      'isAwaitingPermissions': isAwaitingPermissions,
-      //'mapController': mapController?.toMap(),
-      'latestLocation': latestLocation?.toMap(),
-      'shouldFly': shouldFly,
-      //'lastLines': lastLines.map((x) => x.toMap()).toList(),
-    };
-  }
-
-  factory LocationState.fromMap(Map<String, dynamic> map) {
-    return LocationState(
-        isLocating: map['isLocating'] ?? false,
-        isPermissionGranted: map['isPermissionGranted'] ?? false,
-        isAwaitingPermissions: map['isAwaitingPermissions'] ?? false,
-        //mapController: map['mapController'] != null ? here_map.HereMapController.fromMap(map['mapController']) : null,
-        //latestLocation: map['latestLocation'] != null ? Location.fromMap(map['latestLocation']) : null,
-        shouldFly: map['shouldFly'] ?? false,
-        lastLines: []
-        //lastLines: List<here_core.GeoCoordinates>.from(map['lastLines']?.map((x) => here_core.GeoCoordinates.fromMap(x))),
-        );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory LocationState.fromJson(String source) =>
-      LocationState.fromMap(json.decode(source));
-
   @override
   String toString() {
-    return 'LocationState(isLocating: $isLocating, isPermissionGranted: $isPermissionGranted, isAwaitingPermissions: $isAwaitingPermissions, mapController: $mapController, latestLocation: $latestLocation, shouldFly: $shouldFly, lastLines: $lastLines)';
+    return 'LocationState(isLocating: $isLocating, permissionState: $permissionState, mapController: $mapController, latestLocation: $latestLocation, locator: $locator, shouldFly: $shouldFly, lastLines: $lastLines)';
   }
 
   @override
@@ -101,9 +71,9 @@ class LocationState {
 
     return other is LocationState &&
         other.isLocating == isLocating &&
-        other.isPermissionGranted == isPermissionGranted &&
-        other.isAwaitingPermissions == isAwaitingPermissions &&
+        other.permissionState == permissionState &&
         other.mapController == mapController &&
+        other.locator == locator &&
         other.latestLocation == latestLocation &&
         other.shouldFly == shouldFly &&
         listEquals(other.lastLines, lastLines);
@@ -112,10 +82,10 @@ class LocationState {
   @override
   int get hashCode {
     return isLocating.hashCode ^
-        isPermissionGranted.hashCode ^
-        isAwaitingPermissions.hashCode ^
+        permissionState.hashCode ^
         mapController.hashCode ^
         latestLocation.hashCode ^
+        locator.hashCode ^
         shouldFly.hashCode ^
         lastLines.hashCode;
   }
@@ -125,32 +95,20 @@ class LocationProvider extends StateNotifier<LocationState> {
   LocationProvider(this.ref)
       : super(LocationState(
           isLocating: false,
-          isPermissionGranted: false,
-          isAwaitingPermissions: true,
+          permissionState: PermissionStatus.denied,
           lastLines: [],
+          locator: Location(),
         ));
   final Ref ref;
   here_map.LocationIndicator? _locIndicator;
   here_map.MapPolyline? _mapPolyline;
 
-  Future<bool> checkPremission() async {
-    if (!state.isAwaitingPermissions) return state.isPermissionGranted;
-    try {
-      final premissionStatus = await Permission.locationWhenInUse.status;
-      if (premissionStatus.isGranted || premissionStatus.isLimited) {
-        state = state.copyWith(
-            isPermissionGranted: true, isAwaitingPermissions: false);
-        return true;
-      } else {
-        state = state.copyWith(
-            isPermissionGranted: false, isAwaitingPermissions: false);
-      }
-      return false;
-    } catch (e) {
-      state = state.copyWith(
-          isPermissionGranted: false, isAwaitingPermissions: false);
-      return false;
-    }
+  Future<PermissionStatus> checkPermission() async {
+    state = state.copyWith(
+      permissionState: await state.locator.hasPermission(),
+    );
+
+    return state.permissionState!;
   }
 
   Future<void> launchPermission(BuildContext context) async {
@@ -167,9 +125,9 @@ class LocationProvider extends StateNotifier<LocationState> {
         builder: (_) {
           return LocationAccessCard(callback: () async {
             Beamer.of(context).popRoute();
-            final status = await Permission.locationWhenInUse.request();
+            final status = await state.locator.requestPermission();
 
-            if (status.isPermanentlyDenied) {
+            if (status == PermissionStatus.deniedForever) {
               showDialog(
                   context: context,
                   builder: (context) {
@@ -183,7 +141,7 @@ class LocationProvider extends StateNotifier<LocationState> {
                       actions: [
                         TextButton(
                           onPressed: () {
-                            openAppSettings();
+                            // TODO: Open App Settings
                             Beamer.of(context).popRoute();
                           },
                           child: const Text("Open App Settings"),
@@ -197,38 +155,13 @@ class LocationProvider extends StateNotifier<LocationState> {
                       ],
                     );
                   });
-              state = state.copyWith(isPermissionGranted: false);
-            } else if (status.isGranted || status.isLimited) {
-              state = state.copyWith(isPermissionGranted: true);
-            } else {
-              state = state.copyWith(isPermissionGranted: false);
             }
+            state = state.copyWith(permissionState: status);
           });
         });
   }
 
-  Future<void> beginTracking() async {
-    if (state.isLocating) return;
-
-    BackgroundLocation.setAndroidNotification(
-      title: "TreeRoute is accessing your location",
-      message: "Click here to open TreeRoute.",
-      icon: "@mipmap/launcher_icon",
-    );
-    BackgroundLocation.startLocationService(distanceFilter: 1);
-    state = state.copyWith(isLocating: true);
-
-    BackgroundLocation.getLocationUpdates((location) {
-      final oldLoc = state.latestLocation;
-      state = state.copyWith(latestLocation: location);
-      _updateMap(oldLoc, location);
-    });
-    _locIndicator ??= here_map.LocationIndicator();
-    state.mapController?.addLifecycleListener(_locIndicator!);
-  }
-
   Future<void> stopAndDispose({clear = false}) async {
-    BackgroundLocation.stopLocationService();
     if (_locIndicator != null) {
       state.mapController?.removeLifecycleListener(_locIndicator!);
     }
@@ -236,10 +169,10 @@ class LocationProvider extends StateNotifier<LocationState> {
     state = state.copyWith(isLocating: false);
     if (clear) {
       state = LocationState(
-          isLocating: false,
-          isPermissionGranted: false,
-          isAwaitingPermissions: true,
-          lastLines: []);
+        isLocating: false,
+        lastLines: [],
+        locator: Location(),
+      );
     }
   }
 
@@ -250,7 +183,7 @@ class LocationProvider extends StateNotifier<LocationState> {
     }
   }
 
-  void _updateMap(Location? previous, Location next) {
+  void _updateMap(LocationData? previous, LocationData next) {
     if (state.mapController != null) {
       final nextCoordinate =
           here_core.GeoCoordinates(next.latitude!, next.longitude!);
@@ -261,7 +194,7 @@ class LocationProvider extends StateNotifier<LocationState> {
 
       final loc = here_core.Location.withCoordinates(nextCoordinate);
       loc.time = DateTime.now();
-      loc.bearingInDegrees = next.bearing;
+      loc.bearingInDegrees = next.heading;
 
       _locIndicator?.updateLocation(loc);
 
@@ -317,22 +250,6 @@ class LocationProvider extends StateNotifier<LocationState> {
     return mapPolyline;
   }
 
-  void init() async {
-    // Needs to be called before accessing SDKOptions to load necessary libraries.
-    here_core.SdkContext.init(here_core.IsolateOrigin.main);
-
-    // Set your credentials for the HERE SDK.
-    String accessKeyId = HERESDKKeys.appKeyId;
-    String accessKeySecret = HERESDKKeys.appKeySecret;
-    SDKOptions sdkOptions =
-        SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
-
-    try {
-      await SDKNativeEngine.makeSharedInstance(sdkOptions);
-    } on InstantiationException {
-      throw Exception("Failed to initialize the HERE SDK.");
-    }
-  }
 
   void disposeHERESDK() async {
     // Free HERE SDK resources before the application shuts down.

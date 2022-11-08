@@ -36,16 +36,17 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   wakelock: ^0.6.2
-  background_location: 
-    git:
-      url: https://github.com/hilalbaig/background_location.git
-      ref: master
+  background_location:
+      git:
+        url: https://github.com/Almoullim/background_location.git
+        ref: v0.9.0
   here_sdk:
     path: plugins/heresdk
   beamer: ^1.5.3
   permission_handler: ^10.2.0
   hooks_riverpod: ^2.1.1
   flutter_svg: ^1.1.6
+  location: ^4.4.0
 
 dev_dependencies:
   flutter_test:
