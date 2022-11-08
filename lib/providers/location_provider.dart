@@ -1,24 +1,17 @@
-// ignore_for_file: unused_import
-
 import 'dart:async';
 import 'dart:convert';
-import 'dart:html';
-import 'dart:isolate';
 
 import 'package:beamer/beamer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_compass/flutter_compass.dart';
 import 'package:here_sdk/core.dart' as here_core;
 import 'package:here_sdk/core.engine.dart';
-import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart' as here_map;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:location/location.dart';
-import 'package:here_sdk/private/keys.dart';
 
-import '../theme/light_theme.dart';
 import '../widgets/common/location_access_expl.dart';
-import 'providers.dart';
 
 class LocationState {
   bool isLocating;
@@ -28,6 +21,7 @@ class LocationState {
   Location locator;
   bool shouldFly;
   List<here_core.GeoCoordinates> lastLines;
+  CompassEvent? compass;
 
   LocationState({
     required this.isLocating,
@@ -37,17 +31,18 @@ class LocationState {
     required this.locator,
     this.shouldFly = true,
     required this.lastLines,
+    this.compass,
   });
 
   LocationState copyWith({
     bool? isLocating,
     PermissionStatus? permissionState,
-    bool? isAwaitingPermissions,
     here_map.HereMapController? mapController,
     LocationData? latestLocation,
     Location? locator,
     bool? shouldFly,
     List<here_core.GeoCoordinates>? lastLines,
+    CompassEvent? compass,
   }) {
     return LocationState(
       isLocating: isLocating ?? this.isLocating,
@@ -57,12 +52,13 @@ class LocationState {
       locator: locator ?? this.locator,
       shouldFly: shouldFly ?? this.shouldFly,
       lastLines: lastLines ?? this.lastLines,
+      compass: compass ?? this.compass,
     );
   }
 
   @override
   String toString() {
-    return 'LocationState(isLocating: $isLocating, permissionState: $permissionState, mapController: $mapController, latestLocation: $latestLocation, locator: $locator, shouldFly: $shouldFly, lastLines: $lastLines)';
+    return 'LocationState(isLocating: $isLocating, permissionState: $permissionState, mapController: $mapController, latestLocation: $latestLocation, locator: $locator, shouldFly: $shouldFly, lastLines: $lastLines, compass: $compass)';
   }
 
   @override
@@ -73,10 +69,11 @@ class LocationState {
         other.isLocating == isLocating &&
         other.permissionState == permissionState &&
         other.mapController == mapController &&
-        other.locator == locator &&
         other.latestLocation == latestLocation &&
+        other.locator == locator &&
         other.shouldFly == shouldFly &&
-        listEquals(other.lastLines, lastLines);
+        listEquals(other.lastLines, lastLines) &&
+        other.compass == compass;
   }
 
   @override
@@ -87,7 +84,8 @@ class LocationState {
         latestLocation.hashCode ^
         locator.hashCode ^
         shouldFly.hashCode ^
-        lastLines.hashCode;
+        lastLines.hashCode ^
+        compass.hashCode;
   }
 }
 
@@ -95,13 +93,12 @@ class LocationProvider extends StateNotifier<LocationState> {
   LocationProvider(this.ref)
       : super(LocationState(
           isLocating: false,
-          permissionState: PermissionStatus.denied,
+          permissionState: null,
           lastLines: [],
           locator: Location(),
         ));
   final Ref ref;
   here_map.LocationIndicator? _locIndicator;
-  here_map.MapPolyline? _mapPolyline;
 
   Future<PermissionStatus> checkPermission() async {
     state = state.copyWith(
@@ -179,77 +176,64 @@ class LocationProvider extends StateNotifier<LocationState> {
   void shouldFly({bool doNow = true}) {
     state = state.copyWith(shouldFly: true);
     if (doNow && state.latestLocation != null) {
-      _updateMap(null, state.latestLocation!);
+      _updateMap(state.latestLocation!);
     }
   }
 
-  void _updateMap(LocationData? previous, LocationData next) {
+  void _updateMap(LocationData next) {
     if (state.mapController != null) {
       final nextCoordinate =
           here_core.GeoCoordinates(next.latitude!, next.longitude!);
 
-      final previousCoordinate = previous == null
-          ? null
-          : here_core.GeoCoordinates(previous.latitude!, previous.longitude!);
-
       final loc = here_core.Location.withCoordinates(nextCoordinate);
       loc.time = DateTime.now();
-      loc.bearingInDegrees = next.heading;
+      loc.bearingInDegrees = state.compass?.heading ?? 0;
 
       _locIndicator?.updateLocation(loc);
 
-      if (previousCoordinate == null ||
-          nextCoordinate.distanceTo(previousCoordinate) > 1) {
-        if (state.shouldFly) {
-          if (previousCoordinate == null) {
-            state.mapController?.camera.lookAtPointWithMeasure(nextCoordinate,
-                here_map.MapMeasure(here_map.MapMeasureKind.distance, 1500));
-          } else {
-            state.mapController?.camera
-                .flyToWithOptionsAndGeoOrientationAndDistance(
-                    nextCoordinate,
-                    here_core.GeoOrientationUpdate(loc.bearingInDegrees, 60),
-                    1500,
-                    here_map.MapCameraFlyToOptions.withDefaults());
-          }
-        }
-        state.lastLines.add(nextCoordinate);
-        if (state.lastLines.length > 5000) {
-          state.lastLines.removeAt(0);
-        }
-        final mapScene = state.mapController?.mapScene;
-
-        final mapPolylineNew = _createPolyline(state.lastLines);
-        if (mapPolylineNew != null) {
-          mapScene?.addMapPolyline(mapPolylineNew);
-        }
-        if (_mapPolyline != null) {
-          mapScene?.removeMapPolyline(_mapPolyline!);
-        }
-        _mapPolyline = mapPolylineNew;
+      if (state.shouldFly) {
+        _flyTo(geoCoordinates: nextCoordinate);
       }
     }
   }
 
-  here_map.MapPolyline? _createPolyline(
-    List<here_core.GeoCoordinates> coordinates,
-  ) {
-    here_core.GeoPolyline geoPolyline;
-    try {
-      geoPolyline = here_core.GeoPolyline(coordinates);
-    } on InstantiationException {
-      // Thrown when less than two vertices.
-      return null;
-    }
+  StreamSubscription<LocationData> startLocating() {
+    state.isLocating = true;
 
-    double widthInPixels = 20;
-    Color lineColor = lightTheme().primaryColor;
-    here_map.MapPolyline mapPolyline =
-        here_map.MapPolyline(geoPolyline, widthInPixels, lineColor);
+    state.locator.getLocation().then((value) {
+      state = state.copyWith(latestLocation: value);
+      _updateMap(value);
+    });
 
-    return mapPolyline;
+    _locIndicator ??= here_map.LocationIndicator();
+    state.mapController?.addLifecycleListener(_locIndicator!);
+
+    FlutterCompass.events?.listen((event) {
+      state = state.copyWith(compass: event);
+    });
+
+    return state.locator.onLocationChanged
+        .listen((LocationData currentLocation) {
+      state.copyWith(latestLocation: currentLocation, isLocating: true);
+      _updateMap(currentLocation);
+    });
   }
 
+  void _flyTo({
+    required here_core.GeoCoordinates geoCoordinates,
+    int durationMillis = 200,
+    double bowFactor = 0,
+  }) {
+    here_core.GeoCoordinatesUpdate geoCoordinatesUpdate =
+        here_core.GeoCoordinatesUpdate.fromGeoCoordinates(geoCoordinates);
+    here_map.MapCameraAnimation animation =
+        here_map.MapCameraAnimationFactory.flyToWithZoom(
+            geoCoordinatesUpdate,
+            here_map.MapMeasure(here_map.MapMeasureKind.zoomLevel, 18),
+            bowFactor,
+            Duration(milliseconds: durationMillis));
+    state.mapController?.camera.startAnimation(animation);
+  }
 
   void disposeHERESDK() async {
     // Free HERE SDK resources before the application shuts down.

@@ -9,16 +9,7 @@ class TrackingStatusCard extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final locationState = ref.watch(locationProvider);
-    final locationStateNotifier = ref.read(locationProvider.notifier);
 
-    final res = locationStateNotifier.checkPermission().then((value) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (value == PermissionStatus.denied ||
-            value == PermissionStatus.deniedForever) {
-          locationStateNotifier.launchPermission(context);
-        }
-      });
-    });
     return Card(
       margin: const EdgeInsets.all(15),
       child: SizedBox(

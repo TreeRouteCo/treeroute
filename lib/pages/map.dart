@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
 import 'package:wakelock/wakelock.dart';
 import '../providers/providers.dart';
 import 'package:here_sdk/core.dart';
@@ -67,7 +68,10 @@ class _MapPageState extends ConsumerState<MapPage> {
     );
   }
 
-  void _onMapCreated(HereMapController hereMapController) {
+  void _onMapCreated(HereMapController hereMapController) async {
+    final locationState = ref.read(locationProvider);
+    final locationStateNotifier = ref.read(locationProvider.notifier);
+
     hereMapController.mapScene.loadSceneForMapScheme(
         Theme.of(context).brightness == Brightness.light
             ? MapScheme.normalDay
@@ -75,54 +79,54 @@ class _MapPageState extends ConsumerState<MapPage> {
       if (error != null) {
         return;
       }
-
-      hereMapController.mapScene.setLayerVisibility(
-          MapSceneLayers.trafficIncidents, VisibilityState.visible);
-      // MapSceneLayers.trafficIncidents renders traffic icons and lines to indicate the location of incidents. Note that these are not directly pickable yet.
-      hereMapController.mapScene.setLayerVisibility(
-          MapSceneLayers.trafficFlow, VisibilityState.visible);
-
-      /*hereMapController.gestures.disableDefaultAction(GestureType.twoFingerTap);
-      hereMapController.gestures.disableDefaultAction(GestureType.doubleTap);
-      hereMapController.gestures.disableDefaultAction(GestureType.pan);
-      hereMapController.gestures.disableDefaultAction(GestureType.pinchRotate);
-      hereMapController.gestures.disableDefaultAction(GestureType.twoFingerPan);
-      hereMapController.gestures.disableDefaultAction(GestureType.twoFingerTap);*/
-
-      var shouldFly = ref.read(locationProvider).shouldFly;
-
-      hereMapController.gestures.panListener = PanListener((p0, p1, p2, p3) {
-        if (mounted && shouldFly) {
-          setState(() {
-            ref.read(locationProvider).shouldFly = false;
-          });
-        }
-      });
-      hereMapController.gestures.doubleTapListener = DoubleTapListener((p0) {
-        if (mounted && shouldFly) {
-          ref.read(locationProvider).shouldFly = false;
-        }
-      });
-      hereMapController.gestures.pinchRotateListener =
-          PinchRotateListener((p0, p1, p2, p3, p4) {
-        if (mounted && shouldFly) {
-          ref.read(locationProvider).shouldFly = false;
-        }
-      });
-      hereMapController.gestures.twoFingerPanListener =
-          TwoFingerPanListener((p0, p1, p2, p3) {
-        if (mounted && shouldFly) {
-          ref.read(locationProvider).shouldFly = false;
-        }
-      });
-
-      hereMapController.camera.lookAtPointWithMeasure(
-          GeoCoordinates(52.530932, 13.384915),
-          MapMeasure(MapMeasureKind.distance, 55005000));
-      hereMapController.setWatermarkPlacement(
-          WatermarkPlacement.bottomCenter, 13);
-
-      ref.read(locationProvider).mapController = hereMapController;
     });
+
+    var shouldFly = ref.read(locationProvider).shouldFly;
+
+    hereMapController.gestures.panListener = PanListener((p0, p1, p2, p3) {
+      if (mounted && shouldFly) {
+        setState(() {
+          ref.read(locationProvider).shouldFly = false;
+        });
+      }
+    });
+    hereMapController.gestures.doubleTapListener = DoubleTapListener((p0) {
+      if (mounted && shouldFly) {
+        ref.read(locationProvider).shouldFly = false;
+      }
+    });
+    hereMapController.gestures.pinchRotateListener =
+        PinchRotateListener((p0, p1, p2, p3, p4) {
+      if (mounted && shouldFly) {
+        ref.read(locationProvider).shouldFly = false;
+      }
+    });
+    hereMapController.gestures.twoFingerPanListener =
+        TwoFingerPanListener((p0, p1, p2, p3) {
+      if (mounted && shouldFly) {
+        ref.read(locationProvider).shouldFly = false;
+      }
+    });
+
+    hereMapController.camera.lookAtPointWithMeasure(
+        // Stanford University coordinates
+        GeoCoordinates(37.42796133580664, -122.085749655962),
+        MapMeasure(MapMeasureKind.zoomLevel, 15));
+    hereMapController.setWatermarkPlacement(
+        WatermarkPlacement.bottomCenter, 13);
+
+    ref.read(locationProvider).mapController = hereMapController;
+
+    late final PermissionStatus permissionStatus;
+
+    if (locationState.permissionState == null) {
+      permissionStatus = await locationStateNotifier.checkPermission();
+    }
+
+    if (!locationState.isLocating &&
+        (permissionStatus == PermissionStatus.granted ||
+            permissionStatus == PermissionStatus.grantedLimited)) {
+      locationStateNotifier.startLocating();
+    }
   }
 }

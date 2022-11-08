@@ -8,15 +8,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.9.0"
-  background_location:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: "v0.9.0"
-      resolved-ref: "73062c932711d8de6a7232d0f97dc5e1f0cd219f"
-      url: "https://github.com/Almoullim/background_location.git"
-    source: git
-    version: "0.9.0"
   beamer:
     dependency: "direct main"
     description:
@@ -78,6 +69,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_compass:
+    dependency: "direct main"
+    description:
+      name: flutter_compass
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.7.0"
   flutter_hooks:
     dependency: transitive
     description:

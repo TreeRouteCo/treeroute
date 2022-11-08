@@ -24,6 +24,10 @@ class _SpeedIndicatorState extends ConsumerState<SpeedIndicator> {
   Widget build(BuildContext context) {
     final locationState = ref.watch(locationProvider);
 
+    final speed =
+        (locationState.latestLocation!.speed! * (isMetric ? 3.6 : 2.23694))
+            .toInt();
+
     return GestureDetector(
       onLongPress: () {
         HapticFeedback.heavyImpact();
@@ -47,10 +51,7 @@ class _SpeedIndicatorState extends ConsumerState<SpeedIndicator> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    (locationState.latestLocation!.speed! *
-                            (isMetric ? 3.6 : 2.23694))
-                        .toInt()
-                        .toString(),
+                    speed > 0 ? speed.toString() : "0",
                     style: Theme.of(context)
                         .textTheme
                         .bodyLarge
