@@ -15,10 +15,11 @@ class SearchCard extends StatefulHookConsumerWidget {
 
 class _SearchCardState extends ConsumerState<SearchCard> {
   List<Suggestion> suggestions = [];
+  Suggestion? selectedSuggestion;
 
   @override
   Widget build(BuildContext context) {
-    final locationState = ref.watch(locationProvider);
+    final locationState = ref.watch(locationProvider.notifier);
 
     final textController = useTextEditingController();
 
@@ -67,22 +68,65 @@ class _SearchCardState extends ConsumerState<SearchCard> {
           ),
           Card(
             margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              // Search results
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: suggestions.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(suggestions[index].title),
-                    subtitle: Text(
-                        suggestions[index].place?.address.addressText ?? ''),
-                    onTap: () {
-                      print(suggestions[index].title);
-                    },
-                  );
-                },
+            child: SizedBox(
+              height: 250,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                // Search results
+                child: selectedSuggestion == null
+                    ? ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: suggestions.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 20, horizontal: 5),
+                              child: Text(
+                                "Search Results",
+                                style: Theme.of(context).textTheme.headline6,
+                              ),
+                            );
+                          }
+                          index--;
+                          return ListTile(
+                            title: Text(suggestions[index].title),
+                            subtitle: Text(
+                                suggestions[index].place?.address.addressText ??
+                                    ''),
+                            onTap: () {
+                              selectedSuggestion = suggestions[index];
+                              locationState.addMarker(
+                                  selectedSuggestion!.place!.geoCoordinates!);
+                              setState(() {});
+                            },
+                          );
+                        },
+                      )
+                    : Column(
+                        children: [
+                          // Show selected suggestion, as title, address and button to fly to it
+                          // Back button
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.arrow_back),
+                                onPressed: () {
+                                  selectedSuggestion = null;
+                                  setState(() {});
+                                },
+                              ),
+                              Text(selectedSuggestion!.title),
+                              const SizedBox(
+                                width: 48,
+                              ),
+                            ],
+                          ),
+                          Text(selectedSuggestion!.place?.address.addressText ??
+                              ''),
+                        ],
+                      ),
               ),
             ),
           ),

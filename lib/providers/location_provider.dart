@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:beamer/beamer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:here_sdk/core.dart' as here_core;
 import 'package:here_sdk/core.engine.dart';
@@ -109,6 +109,7 @@ class LocationProvider extends StateNotifier<LocationState> {
   final Ref ref;
   here_map.LocationIndicator? _locIndicator;
   bool? darkModeMap;
+  here_map.MapImage? _photoMapImage;
 
   Future<PermissionStatus> checkPermission() async {
     state = state.copyWith(
@@ -267,10 +268,37 @@ class LocationProvider extends StateNotifier<LocationState> {
     searchOptions.languageCode = here_core.LanguageCode.enUs;
     searchOptions.maxItems = 5;
 
-    TextQueryArea queryArea = TextQueryArea.withCenter(centerGeoCoordinates);
+    TextQueryArea queryArea = TextQueryArea.withCircle(
+      here_core.GeoCircle(
+        centerGeoCoordinates,
+        10000,
+      ),
+    );
 
     return state.searchEngine
         .suggest(TextQuery.withArea(text, queryArea), searchOptions, callback);
+  }
+
+  Future<here_map.MapMarker> addMarker(here_core.GeoCoordinates coords) async {
+    if (_photoMapImage == null) {
+      Uint8List imagePixelData =
+          await _loadFileAsUint8List('assets/markergb1.png');
+      _photoMapImage = here_map.MapImage.withPixelDataAndImageFormat(
+          imagePixelData, here_map.ImageFormat.png);
+    }
+
+    here_map.MapMarker mapMarker = here_map.MapMarker(coords, _photoMapImage!);
+    mapMarker.drawOrder = 1;
+
+    state.mapController?.mapScene.addMapMarker(mapMarker);
+
+    return mapMarker;
+  }
+
+  Future<Uint8List> _loadFileAsUint8List(String assetPathToFile) async {
+    // The path refers to the assets directory as specified in pubspec.yaml.
+    ByteData fileData = await rootBundle.load(assetPathToFile);
+    return Uint8List.view(fileData.buffer);
   }
 
   void loadCustomMapStyle(bool dark) {

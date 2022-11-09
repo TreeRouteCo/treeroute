@@ -7,7 +7,6 @@ import 'package:here_sdk/gestures.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../widgets/map/appbar_card.dart';
 import '../widgets/map/focus_on_map_fab.dart';
 import '../widgets/map/speed_indicator.dart';
 import '../widgets/map/search_card.dart';
@@ -68,7 +67,7 @@ class _MapPageState extends ConsumerState<MapPage> {
               if (locationState.latestLocation?.speed != null &&
                   locationState.isLocating)
                 const Positioned(
-                  bottom: 90,
+                  bottom: 340,
                   left: 20,
                   child: SpeedIndicator(),
                 ),
