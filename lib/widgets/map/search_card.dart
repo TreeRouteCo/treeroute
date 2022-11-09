@@ -20,6 +20,8 @@ class _SearchCardState extends ConsumerState<SearchCard> {
   @override
   Widget build(BuildContext context) {
     final locationState = ref.watch(locationProvider.notifier);
+    final routingStateNotifier = ref.watch(routingProvider.notifier);
+    final routingState = ref.watch(routingProvider);
 
     final textController = useTextEditingController();
 
@@ -68,8 +70,9 @@ class _SearchCardState extends ConsumerState<SearchCard> {
           ),
           Card(
             margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-            child: SizedBox(
-              height: 250,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              height: suggestions.isEmpty ? 0 : 250,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 // Search results
@@ -97,7 +100,8 @@ class _SearchCardState extends ConsumerState<SearchCard> {
                             onTap: () {
                               selectedSuggestion = suggestions[index];
                               locationState.addMarker(
-                                  selectedSuggestion!.place!.geoCoordinates!);
+                                  selectedSuggestion!.place!.geoCoordinates!,
+                                  shouldFly: true);
                               setState(() {});
                             },
                           );
@@ -117,7 +121,10 @@ class _SearchCardState extends ConsumerState<SearchCard> {
                                   setState(() {});
                                 },
                               ),
-                              Text(selectedSuggestion!.title),
+                              Text(
+                                selectedSuggestion!.title,
+                                style: Theme.of(context).textTheme.headline6,
+                              ),
                               const SizedBox(
                                 width: 48,
                               ),
@@ -125,6 +132,37 @@ class _SearchCardState extends ConsumerState<SearchCard> {
                           ),
                           Text(selectedSuggestion!.place?.address.addressText ??
                               ''),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          // Bike and walk buttons
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  ref.read(routingProvider.notifier).addRoute(
+                                        endCoords: selectedSuggestion!
+                                            .place!.geoCoordinates!,
+                                        isBiking: true,
+                                      );
+                                  //locationState.routeTo(selectedSuggestion!.place!);
+                                },
+                                child: const Text('Bike'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  ref.read(routingProvider.notifier).addRoute(
+                                        endCoords: selectedSuggestion!
+                                            .place!.geoCoordinates!,
+                                        isBiking: false,
+                                      );
+                                  //locationState.routeTo(selectedSuggestion!.place!);
+                                },
+                                child: const Text('Walk'),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
               ),

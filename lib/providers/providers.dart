@@ -5,6 +5,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'location_provider.dart';
+import 'routing_provider.dart';
 
 /*final authProvider = StateNotifierProvider<Auth, AuthState>((ref) {
   return Auth(ref);
@@ -17,4 +18,8 @@ final accountProvider = StateNotifierProvider<AccountProvider, Account?>((ref) {
 final locationProvider =
     StateNotifierProvider<LocationProvider, LocationState>((ref) {
   return LocationProvider(ref);
+});
+
+final routingProvider = StateNotifierProvider<RoutingProvider, RouteState>((ref) {
+  return RoutingProvider(ref);
 });

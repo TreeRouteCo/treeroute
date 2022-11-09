@@ -9,6 +9,7 @@ import 'package:here_sdk/core.dart' as here_core;
 import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.threading.dart';
 import 'package:here_sdk/mapview.dart' as here_map;
+import 'package:here_sdk/routing.dart' as here_route;
 import 'package:here_sdk/search.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:location/location.dart';
@@ -25,6 +26,7 @@ class LocationState {
   bool shouldFly;
   List<here_core.GeoCoordinates> lastLines;
   CompassEvent? compass;
+  here_route.RoutingEngine routingEngine;
 
   LocationState({
     required this.isLocating,
@@ -36,6 +38,7 @@ class LocationState {
     required this.searchEngine,
     required this.lastLines,
     this.compass,
+    required this.routingEngine,
   });
 
   LocationState copyWith({
@@ -48,6 +51,7 @@ class LocationState {
     List<here_core.GeoCoordinates>? lastLines,
     CompassEvent? compass,
     SearchEngine? searchEngine,
+    here_route.RoutingEngine? routingEngine,
   }) {
     return LocationState(
       isLocating: isLocating ?? this.isLocating,
@@ -59,12 +63,13 @@ class LocationState {
       lastLines: lastLines ?? this.lastLines,
       compass: compass ?? this.compass,
       searchEngine: searchEngine ?? this.searchEngine,
+      routingEngine: routingEngine ?? this.routingEngine,
     );
   }
 
   @override
   String toString() {
-    return 'LocationState(isLocating: $isLocating, permissionState: $permissionState, mapController: $mapController, latestLocation: $latestLocation, locator: $locator, shouldFly: $shouldFly, lastLines: $lastLines, compass: $compass)';
+    return 'LocationState(isLocating: $isLocating, permissionState: $permissionState, mapController: $mapController, latestLocation: $latestLocation, locator: $locator, shouldFly: $shouldFly, lastLines: $lastLines, compass: $compass, searchEngine: $searchEngine, routingEngine: $routingEngine)';
   }
 
   @override
@@ -80,6 +85,7 @@ class LocationState {
         other.shouldFly == shouldFly &&
         listEquals(other.lastLines, lastLines) &&
         searchEngine == other.searchEngine &&
+        routingEngine == other.routingEngine &&
         other.compass == compass;
   }
 
@@ -93,6 +99,7 @@ class LocationState {
         shouldFly.hashCode ^
         lastLines.hashCode ^
         searchEngine.hashCode ^
+        routingEngine.hashCode ^
         compass.hashCode;
   }
 }
@@ -105,11 +112,15 @@ class LocationProvider extends StateNotifier<LocationState> {
           lastLines: [],
           locator: Location(),
           searchEngine: SearchEngine(),
+          routingEngine: here_route.RoutingEngine(),
         ));
   final Ref ref;
   here_map.LocationIndicator? _locIndicator;
   bool? darkModeMap;
   here_map.MapImage? _photoMapImage;
+
+  here_core.GeoCoordinates? _selectedCoords;
+  here_map.MapMarker? _selectedMarker;
 
   Future<PermissionStatus> checkPermission() async {
     state = state.copyWith(
@@ -183,6 +194,7 @@ class LocationProvider extends StateNotifier<LocationState> {
         lastLines: [],
         locator: Location(),
         searchEngine: state.searchEngine,
+        routingEngine: state.routingEngine,
       );
     }
   }
@@ -206,7 +218,7 @@ class LocationProvider extends StateNotifier<LocationState> {
       _locIndicator?.updateLocation(loc);
 
       if (state.shouldFly) {
-        _flyTo(geoCoordinates: nextCoordinate);
+        flyTo(geoCoordinates: nextCoordinate);
       }
     }
   }
@@ -233,7 +245,7 @@ class LocationProvider extends StateNotifier<LocationState> {
     });
   }
 
-  void _flyTo({
+  void flyTo({
     required here_core.GeoCoordinates geoCoordinates,
     int durationMillis = 200,
     double bowFactor = 0,
@@ -253,6 +265,35 @@ class LocationProvider extends StateNotifier<LocationState> {
     // Free HERE SDK resources before the application shuts down.
     await SDKNativeEngine.sharedInstance?.dispose();
     here_core.SdkContext.release();
+  }
+
+  Future<here_map.MapMarker> addMarker(here_core.GeoCoordinates coords,
+      {bool shouldFly = false}) async {
+    if (_photoMapImage == null) {
+      Uint8List imagePixelData =
+          await _loadFileAsUint8List('assets/markergb1.png');
+      _photoMapImage = here_map.MapImage.withPixelDataAndImageFormat(
+          imagePixelData, here_map.ImageFormat.png);
+    }
+    if (_selectedCoords != null && _selectedMarker != null) {
+      state.mapController?.mapScene.removeMapMarker(_selectedMarker!);
+      _selectedCoords = null;
+      _selectedMarker = null;
+    }
+
+    here_map.MapMarker mapMarker = here_map.MapMarker(coords, _photoMapImage!);
+    mapMarker.drawOrder = 1;
+
+    state.mapController?.mapScene.addMapMarker(mapMarker);
+
+    _selectedMarker = mapMarker;
+    _selectedCoords = coords;
+
+    if (shouldFly) {
+      flyTo(geoCoordinates: coords, bowFactor: 0.5, durationMillis: 500);
+    }
+
+    return mapMarker;
   }
 
   TaskHandle searchSuggestions(
@@ -277,22 +318,6 @@ class LocationProvider extends StateNotifier<LocationState> {
 
     return state.searchEngine
         .suggest(TextQuery.withArea(text, queryArea), searchOptions, callback);
-  }
-
-  Future<here_map.MapMarker> addMarker(here_core.GeoCoordinates coords) async {
-    if (_photoMapImage == null) {
-      Uint8List imagePixelData =
-          await _loadFileAsUint8List('assets/markergb1.png');
-      _photoMapImage = here_map.MapImage.withPixelDataAndImageFormat(
-          imagePixelData, here_map.ImageFormat.png);
-    }
-
-    here_map.MapMarker mapMarker = here_map.MapMarker(coords, _photoMapImage!);
-    mapMarker.drawOrder = 1;
-
-    state.mapController?.mapScene.addMapMarker(mapMarker);
-
-    return mapMarker;
   }
 
   Future<Uint8List> _loadFileAsUint8List(String assetPathToFile) async {

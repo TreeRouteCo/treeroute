@@ -23,6 +23,8 @@ class _MapPageState extends ConsumerState<MapPage> {
   Widget build(BuildContext context) {
     final locationState = ref.watch(locationProvider);
     final locationStateNotifier = ref.read(locationProvider.notifier);
+    final routingState = ref.watch(routingProvider);
+    final routingStateNotifier = ref.read(routingProvider.notifier);
 
     if (locationStateNotifier.darkModeMap != null) {
       if (locationStateNotifier.darkModeMap! &&
@@ -64,13 +66,13 @@ class _MapPageState extends ConsumerState<MapPage> {
                 right: 0,
                 child: SearchCard(),
               ),
-              if (locationState.latestLocation?.speed != null &&
+              /*if (locationState.latestLocation?.speed != null &&
                   locationState.isLocating)
                 const Positioned(
                   bottom: 340,
                   left: 20,
                   child: SpeedIndicator(),
-                ),
+                ),*/
             ],
           ),
         ),
