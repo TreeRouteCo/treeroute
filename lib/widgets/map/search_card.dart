@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:here_sdk/search.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:treeroute/widgets/common/logo.dart';
 
@@ -17,12 +15,8 @@ class _SearchCardState extends ConsumerState<SearchCard> {
   @override
   Widget build(BuildContext context) {
     final locationState = ref.watch(locationProvider.notifier);
-    final routingStateNotifier = ref.watch(routingProvider.notifier);
-    final routingState = ref.watch(routingProvider);
     final searchState = ref.watch(searchProvider);
     final searchStateNotifier = ref.watch(searchProvider.notifier);
-
-    final textController = useTextEditingController();
 
     return SizedBox(
       child: Column(

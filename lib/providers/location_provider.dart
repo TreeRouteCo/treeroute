@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:here_sdk/core.dart' as here_core;
 import 'package:here_sdk/core.engine.dart';
-import 'package:here_sdk/core.threading.dart';
 import 'package:here_sdk/mapview.dart' as here_map;
 import 'package:here_sdk/routing.dart' as here_route;
 import 'package:here_sdk/search.dart';

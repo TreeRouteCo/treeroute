@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart' as here_core;
@@ -126,7 +124,7 @@ class RoutingProvider extends StateNotifier<RouteState> {
           _showRouteOnMap(route);
           //_zoomToRoute(route);
           //_logRouteViolations(route);
-        } 
+        }
       });
     } else {
       state.routingEngine?.calculatePedestrianRoute(
@@ -139,7 +137,7 @@ class RoutingProvider extends StateNotifier<RouteState> {
           _showRouteOnMap(route);
           //_zoomToRoute(route);
           //_logRouteViolations(route);
-        } 
+        }
       });
     }
   }
@@ -177,7 +175,7 @@ class RoutingProvider extends StateNotifier<RouteState> {
     state = state;
   }
 
-  _zoomToRoute(here_route.Route route) {
+  zoomToRoute(here_route.Route route) {
     here_core.GeoBox routeGeoBox = route.boundingBox;
     ref
         .read(locationProvider)

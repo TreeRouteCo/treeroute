@@ -1,12 +1,8 @@
-import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart' as here_core;
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/core.threading.dart';
-import 'package:here_sdk/mapview.dart' as here_map;
-import 'package:here_sdk/routing.dart' as here_route;
 import 'package:here_sdk/search.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
