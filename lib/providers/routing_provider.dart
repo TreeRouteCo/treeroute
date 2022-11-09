@@ -124,12 +124,9 @@ class RoutingProvider extends StateNotifier<RouteState> {
           var route = routeList!.first;
           _showRouteDetails(route);
           _showRouteOnMap(route);
-          _zoomToRoute(route);
+          //_zoomToRoute(route);
           //_logRouteViolations(route);
-        } else {
-          //var error = routingError.toString();
-          //_showDialog('Error', 'Error while calculating a route: $error');
-        }
+        } 
       });
     } else {
       state.routingEngine?.calculatePedestrianRoute(
@@ -140,12 +137,9 @@ class RoutingProvider extends StateNotifier<RouteState> {
           var route = routeList!.first;
           _showRouteDetails(route);
           _showRouteOnMap(route);
-          _zoomToRoute(route);
+          //_zoomToRoute(route);
           //_logRouteViolations(route);
-        } else {
-          var error = routingError.toString();
-          print('Error while calculating a route: $error');
-        }
+        } 
       });
     }
   }

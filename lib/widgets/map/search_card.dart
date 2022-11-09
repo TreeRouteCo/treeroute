@@ -14,14 +14,13 @@ class SearchCard extends StatefulHookConsumerWidget {
 }
 
 class _SearchCardState extends ConsumerState<SearchCard> {
-  List<Suggestion> suggestions = [];
-  Suggestion? selectedSuggestion;
-
   @override
   Widget build(BuildContext context) {
     final locationState = ref.watch(locationProvider.notifier);
     final routingStateNotifier = ref.watch(routingProvider.notifier);
     final routingState = ref.watch(routingProvider);
+    final searchState = ref.watch(searchProvider);
+    final searchStateNotifier = ref.watch(searchProvider.notifier);
 
     final textController = useTextEditingController();
 
@@ -51,12 +50,8 @@ class _SearchCardState extends ConsumerState<SearchCard> {
                         ),
                         onChanged: (value) {
                           ref
-                              .read(locationProvider.notifier)
-                              .searchSuggestions(value, ((error, sugg) {
-                            setState(() {
-                              suggestions = sugg ?? [];
-                            });
-                          }));
+                              .read(searchProvider.notifier)
+                              .searchSuggestions(value, ((error, sugg) {}));
                         },
                         onTap: () {
                           //ref.read(locationProvider.notifier).search();
@@ -72,14 +67,14 @@ class _SearchCardState extends ConsumerState<SearchCard> {
             margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              height: suggestions.isEmpty ? 0 : 250,
+              height: searchState.suggestions.isEmpty ? 0 : 250,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 // Search results
-                child: selectedSuggestion == null
+                child: searchState.selectedSuggestion == null
                     ? ListView.builder(
                         shrinkWrap: true,
-                        itemCount: suggestions.length + 1,
+                        itemCount: searchState.suggestions.length + 1,
                         itemBuilder: (context, index) {
                           if (index == 0) {
                             return Padding(
@@ -93,15 +88,18 @@ class _SearchCardState extends ConsumerState<SearchCard> {
                           }
                           index--;
                           return ListTile(
-                            title: Text(suggestions[index].title),
-                            subtitle: Text(
-                                suggestions[index].place?.address.addressText ??
-                                    ''),
+                            title: Text(searchState.suggestions[index].title),
+                            subtitle: Text(searchState.suggestions[index].place
+                                    ?.address.addressText ??
+                                ''),
                             onTap: () {
-                              selectedSuggestion = suggestions[index];
+                              searchStateNotifier.selectSuggestion(
+                                  searchState.suggestions[index]);
                               locationState.addMarker(
-                                  selectedSuggestion!.place!.geoCoordinates!,
-                                  shouldFly: true);
+                                searchState
+                                    .suggestions[index].place!.geoCoordinates!,
+                                shouldFly: true,
+                              );
                               setState(() {});
                             },
                           );
@@ -117,12 +115,11 @@ class _SearchCardState extends ConsumerState<SearchCard> {
                               IconButton(
                                 icon: const Icon(Icons.arrow_back),
                                 onPressed: () {
-                                  selectedSuggestion = null;
-                                  setState(() {});
+                                  searchStateNotifier.clearSuggestions();
                                 },
                               ),
                               Text(
-                                selectedSuggestion!.title,
+                                searchState.selectedSuggestion!.title,
                                 style: Theme.of(context).textTheme.headline6,
                               ),
                               const SizedBox(
@@ -130,7 +127,8 @@ class _SearchCardState extends ConsumerState<SearchCard> {
                               ),
                             ],
                           ),
-                          Text(selectedSuggestion!.place?.address.addressText ??
+                          Text(searchState.selectedSuggestion!.place?.address
+                                  .addressText ??
                               ''),
                           const SizedBox(
                             height: 20,
@@ -142,8 +140,10 @@ class _SearchCardState extends ConsumerState<SearchCard> {
                               ElevatedButton(
                                 onPressed: () {
                                   ref.read(routingProvider.notifier).addRoute(
-                                        endCoords: selectedSuggestion!
-                                            .place!.geoCoordinates!,
+                                        endCoords: searchState
+                                            .selectedSuggestion!
+                                            .place!
+                                            .geoCoordinates!,
                                         isBiking: true,
                                       );
                                   //locationState.routeTo(selectedSuggestion!.place!);
@@ -153,8 +153,10 @@ class _SearchCardState extends ConsumerState<SearchCard> {
                               ElevatedButton(
                                 onPressed: () {
                                   ref.read(routingProvider.notifier).addRoute(
-                                        endCoords: selectedSuggestion!
-                                            .place!.geoCoordinates!,
+                                        endCoords: searchState
+                                            .selectedSuggestion!
+                                            .place!
+                                            .geoCoordinates!,
                                         isBiking: false,
                                       );
                                   //locationState.routeTo(selectedSuggestion!.place!);

@@ -291,33 +291,10 @@ class LocationProvider extends StateNotifier<LocationState> {
 
     if (shouldFly) {
       flyTo(geoCoordinates: coords, bowFactor: 0.5, durationMillis: 500);
+      state = state.copyWith(shouldFly: false);
     }
 
     return mapMarker;
-  }
-
-  TaskHandle searchSuggestions(
-    String text,
-    void Function(SearchError? error, List<Suggestion>? suggestions) callback,
-  ) {
-    here_core.GeoCoordinates centerGeoCoordinates = here_core.GeoCoordinates(
-      state.latestLocation?.latitude ?? 0,
-      state.latestLocation?.longitude ?? 0,
-    );
-
-    SearchOptions searchOptions = SearchOptions.withDefaults();
-    searchOptions.languageCode = here_core.LanguageCode.enUs;
-    searchOptions.maxItems = 5;
-
-    TextQueryArea queryArea = TextQueryArea.withCircle(
-      here_core.GeoCircle(
-        centerGeoCoordinates,
-        10000,
-      ),
-    );
-
-    return state.searchEngine
-        .suggest(TextQuery.withArea(text, queryArea), searchOptions, callback);
   }
 
   Future<Uint8List> _loadFileAsUint8List(String assetPathToFile) async {
