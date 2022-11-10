@@ -10,17 +10,17 @@ import 'package:treeroute/providers/providers.dart';
 
 class RouteState {
   final here_route.RoutingEngine? routingEngine;
-  final here_route.Route? routes;
-  final List<here_map.MapPolyline>? polylines;
-  final List<here_core.GeoCoordinates>? waypoints;
+  final here_route.Route? route;
+  final here_map.MapPolyline? polyline;
+  final List<here_route.Waypoint>? waypoints;
   final here_core.GeoCoordinates? start;
   final here_core.GeoCoordinates? end;
   final Suggestion? destination;
 
   RouteState({
     this.routingEngine,
-    this.routes,
-    this.polylines,
+    this.route,
+    this.polyline,
     this.waypoints,
     this.start,
     this.end,
@@ -29,17 +29,17 @@ class RouteState {
 
   RouteState copyWith({
     here_route.RoutingEngine? routingEngine,
-    here_route.Route? routes,
-    List<here_map.MapPolyline>? polylines,
-    List<here_core.GeoCoordinates>? waypoints,
+    here_route.Route? route,
+    here_map.MapPolyline? polyline,
+    List<here_route.Waypoint>? waypoints,
     here_core.GeoCoordinates? start,
     here_core.GeoCoordinates? end,
     Suggestion? destination,
   }) {
     return RouteState(
       routingEngine: routingEngine ?? this.routingEngine,
-      routes: routes ?? this.routes,
-      polylines: polylines ?? this.polylines,
+      route: route ?? this.route,
+      polyline: polyline ?? this.polyline,
       waypoints: waypoints ?? this.waypoints,
       start: start ?? this.start,
       end: end ?? this.end,
@@ -49,7 +49,7 @@ class RouteState {
 
   @override
   String toString() {
-    return 'RouteState(routingEngine: $routingEngine, routes: $routes, polylines: $polylines, waypoints: $waypoints, start: $start, end: $end, destination: $destination)';
+    return 'RouteState(routingEngine: $routingEngine, route: $route, polyline: $polyline, waypoints: $waypoints, start: $start, end: $end, destination: $destination)';
   }
 
   @override
@@ -58,8 +58,8 @@ class RouteState {
 
     return other is RouteState &&
         other.routingEngine == routingEngine &&
-        other.routes == routes &&
-        listEquals(other.polylines, polylines) &&
+        other.route == route &&
+        other.polyline == polyline &&
         listEquals(other.waypoints, waypoints) &&
         other.start == start &&
         other.end == end &&
@@ -69,12 +69,24 @@ class RouteState {
   @override
   int get hashCode {
     return routingEngine.hashCode ^
-        routes.hashCode ^
-        polylines.hashCode ^
+        route.hashCode ^
+        polyline.hashCode ^
         waypoints.hashCode ^
         start.hashCode ^
         end.hashCode ^
         destination.hashCode;
+  }
+
+  removePolyline() {
+    return RouteState(
+      routingEngine: routingEngine,
+      route: route,
+      polyline: null,
+      waypoints: waypoints,
+      start: start,
+      end: end,
+      destination: destination,
+    );
   }
 }
 
@@ -133,6 +145,17 @@ class RoutingProvider extends StateNotifier<RouteState> {
         if (routingError == null) {
           // When error is null, it is guaranteed that the list is not empty.
           var route = routeList!.first;
+          state = state.copyWith(
+            route: route,
+            waypoints: waypoints,
+            start: startGeoCoordinates,
+            end: destinationGeoCoordinates,
+            polyline: here_map.MapPolyline(
+              route.geometry,
+              20,
+              Colors.green,
+            ),
+          );
           _showRouteDetails(route);
           _showRouteOnMap(route);
           //_zoomToRoute(route);
@@ -160,7 +183,6 @@ class RoutingProvider extends StateNotifier<RouteState> {
   }
 
   _showRouteOnMap(here_route.Route route) {
-    state = state.copyWith(routes: route);
     // Show route as polyline.
     here_core.GeoPolyline routeGeoPolyline = route.geometry;
     double widthInPixels = 20;
@@ -171,7 +193,7 @@ class RoutingProvider extends StateNotifier<RouteState> {
         .mapController
         ?.mapScene
         .addMapPolyline(routeMapPolyline);
-    state.polylines?.add(routeMapPolyline);
+    state = state.copyWith(polyline: routeMapPolyline);
     state = state;
   }
 
@@ -186,16 +208,13 @@ class RoutingProvider extends StateNotifier<RouteState> {
   }
 
   _removeRoutesFromMap() {
-    if (state.polylines != null) {
-      for (here_map.MapPolyline mapPolyline in state.polylines!) {
-        ref
-            .read(locationProvider)
-            .mapController
-            ?.mapScene
-            .removeMapPolyline(mapPolyline);
-      }
-      state.polylines?.clear();
-      state = state;
+    if (state.polyline != null) {
+      ref
+          .read(locationProvider)
+          .mapController
+          ?.mapScene
+          .removeMapPolyline(state.polyline!);
+      state = state.removePolyline();
     }
   }
 
@@ -208,17 +227,17 @@ class RoutingProvider extends StateNotifier<RouteState> {
 
   RouteState copyWith({
     here_route.RoutingEngine? routingEngine,
-    here_route.Route? routes,
-    List<here_map.MapPolyline>? polylines,
-    List<here_core.GeoCoordinates>? waypoints,
+    here_route.Route? route,
+    here_map.MapPolyline? polyline,
+    List<here_route.Waypoint>? waypoints,
     here_core.GeoCoordinates? start,
     here_core.GeoCoordinates? end,
     Suggestion? destination,
   }) {
     return RouteState(
       routingEngine: routingEngine ?? state.routingEngine,
-      routes: routes ?? state.routes,
-      polylines: polylines ?? state.polylines,
+      route: route ?? state.route,
+      polyline: polyline ?? state.polyline,
       waypoints: waypoints ?? state.waypoints,
       start: start ?? state.start,
       end: end ?? state.end,

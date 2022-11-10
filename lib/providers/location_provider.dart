@@ -26,6 +26,7 @@ class LocationState {
   List<here_core.GeoCoordinates> lastLines;
   CompassEvent? compass;
   here_route.RoutingEngine routingEngine;
+  bool isInNavigationMode;
 
   LocationState({
     required this.isLocating,
@@ -38,6 +39,7 @@ class LocationState {
     required this.lastLines,
     this.compass,
     required this.routingEngine,
+    this.isInNavigationMode = false,
   });
 
   LocationState copyWith({
@@ -51,6 +53,7 @@ class LocationState {
     CompassEvent? compass,
     SearchEngine? searchEngine,
     here_route.RoutingEngine? routingEngine,
+    bool? isInNavigationMode,
   }) {
     return LocationState(
       isLocating: isLocating ?? this.isLocating,
@@ -63,12 +66,13 @@ class LocationState {
       compass: compass ?? this.compass,
       searchEngine: searchEngine ?? this.searchEngine,
       routingEngine: routingEngine ?? this.routingEngine,
+      isInNavigationMode: isInNavigationMode ?? this.isInNavigationMode,
     );
   }
 
   @override
   String toString() {
-    return 'LocationState(isLocating: $isLocating, permissionState: $permissionState, mapController: $mapController, latestLocation: $latestLocation, locator: $locator, shouldFly: $shouldFly, lastLines: $lastLines, compass: $compass, searchEngine: $searchEngine, routingEngine: $routingEngine)';
+    return 'LocationState(isLocating: $isLocating, permissionState: $permissionState, mapController: $mapController, latestLocation: $latestLocation, locator: $locator, shouldFly: $shouldFly, lastLines: $lastLines, compass: $compass, searchEngine: $searchEngine, routingEngine: $routingEngine, isInNavigationMode: $isInNavigationMode)';
   }
 
   @override
@@ -85,6 +89,7 @@ class LocationState {
         listEquals(other.lastLines, lastLines) &&
         searchEngine == other.searchEngine &&
         routingEngine == other.routingEngine &&
+        other.isInNavigationMode == isInNavigationMode &&
         other.compass == compass;
   }
 
@@ -99,6 +104,7 @@ class LocationState {
         lastLines.hashCode ^
         searchEngine.hashCode ^
         routingEngine.hashCode ^
+        isInNavigationMode.hashCode ^
         compass.hashCode;
   }
 }
@@ -239,7 +245,7 @@ class LocationProvider extends StateNotifier<LocationState> {
 
     return state.locator.onLocationChanged
         .listen((LocationData currentLocation) {
-      state.copyWith(latestLocation: currentLocation, isLocating: true);
+      state = state.copyWith(latestLocation: currentLocation, isLocating: true);
       _updateMap(currentLocation);
     });
   }
@@ -249,12 +255,55 @@ class LocationProvider extends StateNotifier<LocationState> {
     int durationMillis = 200,
     double bowFactor = 0,
   }) {
+    if (state.isInNavigationMode) {
+      flyToInNavMode(
+        geoCoordinates: geoCoordinates,
+        durationMillis: durationMillis,
+        bowFactor: bowFactor,
+      );
+      return;
+    }
     here_core.GeoCoordinatesUpdate geoCoordinatesUpdate =
         here_core.GeoCoordinatesUpdate.fromGeoCoordinates(geoCoordinates);
     here_map.MapCameraAnimation animation =
         here_map.MapCameraAnimationFactory.flyToWithZoom(
             geoCoordinatesUpdate,
             here_map.MapMeasure(here_map.MapMeasureKind.zoomLevel, 18),
+            bowFactor,
+            Duration(milliseconds: durationMillis));
+    state.mapController?.camera.startAnimation(animation);
+  }
+
+  void startNavModeCamera() {
+    if (!state.isInNavigationMode) {
+      state = state.copyWith(isInNavigationMode: true);
+    }
+  }
+
+  void stopNavModeCamera() {
+    if (state.isInNavigationMode) {
+      state = state.copyWith(isInNavigationMode: false);
+    }
+  }
+
+  void flyToInNavMode({
+    required here_core.GeoCoordinates geoCoordinates,
+    int durationMillis = 200,
+    double bowFactor = 0,
+  }) {
+    here_core.GeoCoordinatesUpdate geoCoordinatesUpdate =
+        here_core.GeoCoordinatesUpdate.fromGeoCoordinates(geoCoordinates);
+    here_map.MapCameraAnimation animation =
+        here_map.MapCameraAnimationFactory.flyToWithOrientationAndZoom(
+            geoCoordinatesUpdate,
+            here_core.GeoOrientationUpdate(
+              state.compass?.headingForCameraMode ?? 0,
+              60,
+            ),
+            here_map.MapMeasure(
+              here_map.MapMeasureKind.zoomLevel,
+              19,
+            ),
             bowFactor,
             Duration(milliseconds: durationMillis));
     state.mapController?.camera.startAnimation(animation);

@@ -1,4 +1,3 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:here_sdk/core.dart' as here_core;
 import 'package:here_sdk/core.errors.dart';
@@ -32,6 +31,24 @@ class SearchState {
       suggestions: suggestions ?? this.suggestions,
       selectedSuggestion: selectedSuggestion ?? this.selectedSuggestion,
       searchQuery: searchQuery ?? this.searchQuery,
+    );
+  }
+
+  SearchState deleteSelectedSuggestion() {
+    return SearchState(
+      searchEngine: searchEngine,
+      suggestions: suggestions,
+      selectedSuggestion: null,
+      searchQuery: searchQuery,
+    );
+  }
+
+  SearchState deleteSearchQuery() {
+    return SearchState(
+      searchEngine: searchEngine,
+      suggestions: suggestions,
+      selectedSuggestion: selectedSuggestion,
+      searchQuery: null,
     );
   }
 
@@ -80,7 +97,7 @@ class SearchProvider extends StateNotifier<SearchState> {
     try {
       state = state.copyWith(searchEngine: SearchEngine());
     } on InstantiationException {
-      throw ("Initialization of RoutingEngine failed.");
+      throw ("Initialization of SearchEngine failed.");
     }
   }
 
@@ -108,12 +125,13 @@ class SearchProvider extends StateNotifier<SearchState> {
         .suggest(TextQuery.withArea(text, queryArea), searchOptions,
             (error, suggestions) {
       callback(error, suggestions);
-      if (error != null) {
+      if (error == null) {
         state = state.copyWith(
-            suggestions: suggestions
-                ?.where((element) => element.place?.geoCoordinates != null)
-                .toList(),
-            searchQuery: text);
+          suggestions: suggestions
+              ?.where((element) => element.place?.geoCoordinates != null)
+              .toList(),
+          searchQuery: text,
+        );
       }
     });
   }
@@ -122,7 +140,14 @@ class SearchProvider extends StateNotifier<SearchState> {
     state = state.copyWith(selectedSuggestion: suggestion);
   }
 
-  void clearSuggestions() {
-    state = state.deleteSuggestions();
+  void clearSearch() {
+    state = state
+        .deleteSuggestions()
+        .deleteSearchQuery()
+        .deleteSelectedSuggestion();
+  }
+
+  void clearSelectedSuggestion() {
+    state = state.deleteSelectedSuggestion();
   }
 }

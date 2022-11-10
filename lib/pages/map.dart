@@ -8,7 +8,7 @@ import 'package:here_sdk/mapview.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../widgets/map/focus_on_map_fab.dart';
-import '../widgets/map/speed_indicator.dart';
+//import '../widgets/map/speed_indicator.dart';
 import '../widgets/map/search_card.dart';
 
 class MapPage extends StatefulHookConsumerWidget {
@@ -23,8 +23,8 @@ class _MapPageState extends ConsumerState<MapPage> {
   Widget build(BuildContext context) {
     final locationState = ref.watch(locationProvider);
     final locationStateNotifier = ref.read(locationProvider.notifier);
-    final routingState = ref.watch(routingProvider);
-    final routingStateNotifier = ref.read(routingProvider.notifier);
+    //final routingState = ref.watch(routingProvider);
+    //final routingStateNotifier = ref.read(routingProvider.notifier);
 
     if (locationStateNotifier.darkModeMap != null) {
       if (locationStateNotifier.darkModeMap! &&
@@ -56,7 +56,7 @@ class _MapPageState extends ConsumerState<MapPage> {
               //const AppBarCard(),
               if (!locationState.shouldFly && locationState.isLocating)
                 const Positioned(
-                  bottom: 90,
+                  top: 25,
                   right: 25,
                   child: FocusOnMapFab(),
                 ),
@@ -99,26 +99,26 @@ class _MapPageState extends ConsumerState<MapPage> {
       }
     });
     hereMapController.gestures.doubleTapListener = DoubleTapListener((p0) {
-      if (mounted && shouldFly) {
+      setState(() {
         ref.read(locationProvider).shouldFly = false;
-      }
+      });
     });
     hereMapController.gestures.pinchRotateListener =
         PinchRotateListener((p0, p1, p2, p3, p4) {
-      if (mounted && shouldFly) {
+      setState(() {
         ref.read(locationProvider).shouldFly = false;
-      }
+      });
     });
     hereMapController.gestures.twoFingerPanListener =
         TwoFingerPanListener((p0, p1, p2, p3) {
-      if (mounted && shouldFly) {
+      setState(() {
         ref.read(locationProvider).shouldFly = false;
-      }
+      });
     });
 
     hereMapController.camera.lookAtPointWithMeasure(
         // Stanford University coordinates
-        GeoCoordinates(37.42796133580664, -122.085749655962),
+        GeoCoordinates(37.4241, -122.1661),
         MapMeasure(MapMeasureKind.zoomLevel, 15));
     hereMapController.setWatermarkPlacement(
         WatermarkPlacement.bottomCenter, 13);

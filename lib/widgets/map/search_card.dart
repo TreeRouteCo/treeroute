@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:treeroute/widgets/common/logo.dart';
 
@@ -17,6 +18,10 @@ class _SearchCardState extends ConsumerState<SearchCard> {
     final locationState = ref.watch(locationProvider.notifier);
     final searchState = ref.watch(searchProvider);
     final searchStateNotifier = ref.watch(searchProvider.notifier);
+
+    final textController = useTextEditingController(
+      text: searchState.searchQuery,
+    );
 
     return SizedBox(
       child: Column(
@@ -42,16 +47,25 @@ class _SearchCardState extends ConsumerState<SearchCard> {
                           border: InputBorder.none,
                           hintText: 'Search',
                         ),
+                        controller: textController,
                         onChanged: (value) {
                           ref
                               .read(searchProvider.notifier)
-                              .searchSuggestions(value, ((error, sugg) {}));
+                              .searchSuggestions(value, (error, sugg) {});
                         },
                         onTap: () {
                           //ref.read(locationProvider.notifier).search();
                         },
                       ),
                     ),
+                    if (textController.text != "")
+                      IconButton(
+                        onPressed: () {
+                          ref.read(searchProvider.notifier).clearSearch();
+                          textController.clear();
+                        },
+                        icon: const Icon(Icons.clear),
+                      ),
                   ],
                 ),
               ),
@@ -61,7 +75,12 @@ class _SearchCardState extends ConsumerState<SearchCard> {
             margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              height: searchState.suggestions.isEmpty ? 0 : 250,
+              height: (searchState.suggestions.isEmpty &&
+                      searchState.selectedSuggestion == null)
+                  ? 0
+                  : searchState.selectedSuggestion != null
+                      ? 100
+                      : 250,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 // Search results
@@ -109,30 +128,30 @@ class _SearchCardState extends ConsumerState<SearchCard> {
                               IconButton(
                                 icon: const Icon(Icons.arrow_back),
                                 onPressed: () {
-                                  searchStateNotifier.clearSuggestions();
+                                  searchStateNotifier.clearSelectedSuggestion();
                                 },
                               ),
-                              Text(
-                                searchState.selectedSuggestion!.title,
-                                style: Theme.of(context).textTheme.headline6,
+                              Expanded(
+                                child: Text(
+                                  searchState.selectedSuggestion!.title,
+                                  style: Theme.of(context).textTheme.headline6,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
                               ),
                               const SizedBox(
                                 width: 48,
                               ),
                             ],
                           ),
-                          Text(searchState.selectedSuggestion!.place?.address
-                                  .addressText ??
-                              ''),
-                          const SizedBox(
-                            height: 20,
-                          ),
                           // Bike and walk buttons
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              ElevatedButton(
+                              /*ElevatedButton(
                                 onPressed: () {
+                                  locationState.startNavModeCamera();
+
                                   ref.read(routingProvider.notifier).addRoute(
                                         endCoords: searchState
                                             .selectedSuggestion!
@@ -143,9 +162,11 @@ class _SearchCardState extends ConsumerState<SearchCard> {
                                   //locationState.routeTo(selectedSuggestion!.place!);
                                 },
                                 child: const Text('Bike'),
-                              ),
-                              ElevatedButton(
+                              ),*/
+                              OutlinedButton.icon(
                                 onPressed: () {
+                                  locationState.startNavModeCamera();
+
                                   ref.read(routingProvider.notifier).addRoute(
                                         endCoords: searchState
                                             .selectedSuggestion!
@@ -155,7 +176,8 @@ class _SearchCardState extends ConsumerState<SearchCard> {
                                       );
                                   //locationState.routeTo(selectedSuggestion!.place!);
                                 },
-                                child: const Text('Walk'),
+                                icon: const Icon(Icons.directions),
+                                label: const Text('Navigate'),
                               ),
                             ],
                           ),
