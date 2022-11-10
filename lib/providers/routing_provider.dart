@@ -16,6 +16,8 @@ class RouteState {
   final here_core.GeoCoordinates? start;
   final here_core.GeoCoordinates? end;
   final Suggestion? destination;
+  final int? durationInSecs;
+  final double? distanceInMeters;
 
   RouteState({
     this.routingEngine,
@@ -25,6 +27,8 @@ class RouteState {
     this.start,
     this.end,
     this.destination,
+    this.durationInSecs,
+    this.distanceInMeters,
   });
 
   RouteState copyWith({
@@ -165,7 +169,7 @@ class RoutingProvider extends StateNotifier<RouteState> {
     }
   }
 
-  void _showRouteDetails(here_route.Route route) {
+  List<String> showRouteDetails(here_route.Route route) {
     int estimatedTravelTimeInSeconds = route.duration.inSeconds;
     int lengthInMeters = route.lengthInMeters;
 
@@ -173,6 +177,11 @@ class RoutingProvider extends StateNotifier<RouteState> {
         'Travel Time: ${_formatTime(estimatedTravelTimeInSeconds)}, Length: ${_formatLength(lengthInMeters)}';
 
     print('Route Details $routeDetails');
+
+    return [
+      _formatTime(estimatedTravelTimeInSeconds),
+      _formatLength(lengthInMeters)
+    ];
   }
 
   String _formatLength(int meters) {
@@ -223,6 +232,13 @@ class RoutingProvider extends StateNotifier<RouteState> {
     int minutes = (sec % 3600) ~/ 60;
 
     return '$hours:$minutes min';
+  }
+
+  void clearRoutes() {
+    _removeRoutesFromMap();
+    state = RouteState(
+      routingEngine: state.routingEngine,
+    );
   }
 
   RouteState copyWith({

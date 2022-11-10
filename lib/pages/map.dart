@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
+import 'package:treeroute/widgets/map/bottom_dynamic.dart';
 import 'package:wakelock/wakelock.dart';
 import '../providers/providers.dart';
 import 'package:here_sdk/core.dart';
@@ -64,7 +65,7 @@ class _MapPageState extends ConsumerState<MapPage> {
                 bottom: 0,
                 left: 0,
                 right: 0,
-                child: SearchCard(),
+                child: BottomDynamicCard(),
               ),
               /*if (locationState.latestLocation?.speed != null &&
                   locationState.isLocating)
