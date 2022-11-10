@@ -25,14 +25,56 @@ class _RouteCardState extends ConsumerState<RouteCard> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                route.route!.distance.toStringAsFixed(2) + " km",
-                style: Theme.of(context).textTheme.headline6,
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.route_rounded,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        "Total Distance",
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    "${route.distanceInMeters}m",
+                    style: Theme.of(context).textTheme.headline6,
+                  ),
+                ],
               ),
-              Text(
-                route.route!.duration.toStringAsFixed(2) + " min",
-                style: Theme.of(context).textTheme.headline6,
-              ),
+              /*Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.timer_sharp,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        "Total Route Time",
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    routeNotifier.formatTime(route.durationInSecs!),
+                    style: Theme.of(context).textTheme.headline6,
+                  ),
+                ],
+              ),*/
               IconButton(
                 onPressed: () {
                   routeNotifier.clearRoutes();

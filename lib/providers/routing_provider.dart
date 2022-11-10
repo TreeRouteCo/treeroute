@@ -17,7 +17,7 @@ class RouteState {
   final here_core.GeoCoordinates? end;
   final Suggestion? destination;
   final int? durationInSecs;
-  final double? distanceInMeters;
+  final int? distanceInMeters;
 
   RouteState({
     this.routingEngine,
@@ -39,6 +39,8 @@ class RouteState {
     here_core.GeoCoordinates? start,
     here_core.GeoCoordinates? end,
     Suggestion? destination,
+    int? durationInSecs,
+    int? distanceInMeters,
   }) {
     return RouteState(
       routingEngine: routingEngine ?? this.routingEngine,
@@ -48,12 +50,14 @@ class RouteState {
       start: start ?? this.start,
       end: end ?? this.end,
       destination: destination ?? this.destination,
+      durationInSecs: durationInSecs ?? this.durationInSecs,
+      distanceInMeters: distanceInMeters ?? this.distanceInMeters,
     );
   }
 
   @override
   String toString() {
-    return 'RouteState(routingEngine: $routingEngine, route: $route, polyline: $polyline, waypoints: $waypoints, start: $start, end: $end, destination: $destination)';
+    return 'RouteState(routingEngine: $routingEngine, route: $route, polyline: $polyline, waypoints: $waypoints, start: $start, end: $end, destination: $destination, durationInSecs: $durationInSecs, distanceInMeters: $distanceInMeters)';
   }
 
   @override
@@ -67,7 +71,9 @@ class RouteState {
         listEquals(other.waypoints, waypoints) &&
         other.start == start &&
         other.end == end &&
-        other.destination == destination;
+        other.destination == destination &&
+        other.durationInSecs == durationInSecs &&
+        other.distanceInMeters == distanceInMeters;
   }
 
   @override
@@ -78,7 +84,9 @@ class RouteState {
         waypoints.hashCode ^
         start.hashCode ^
         end.hashCode ^
-        destination.hashCode;
+        destination.hashCode ^
+        durationInSecs.hashCode ^
+        distanceInMeters.hashCode;
   }
 
   removePolyline() {
@@ -90,6 +98,8 @@ class RouteState {
       start: start,
       end: end,
       destination: destination,
+      durationInSecs: durationInSecs,
+      distanceInMeters: distanceInMeters,
     );
   }
 }
@@ -124,7 +134,7 @@ class RoutingProvider extends StateNotifier<RouteState> {
     var destinationGeoCoordinates = endCoords;
     var startWaypoint = here_route.Waypoint.withDefaults(startGeoCoordinates);
     startWaypoint.headingInDegrees =
-        ref.read(locationProvider).compass?.heading;
+        ref.read(locationProvider).compass?.headingForCameraMode;
     var destinationWaypoint =
         here_route.Waypoint.withDefaults(destinationGeoCoordinates);
 
@@ -159,6 +169,9 @@ class RoutingProvider extends StateNotifier<RouteState> {
               20,
               Colors.green,
             ),
+            destination: ref.read(searchProvider).selectedSuggestion,
+            distanceInMeters: route.lengthInMeters,
+            durationInSecs: route.duration.inSeconds,
           );
           _showRouteDetails(route);
           _showRouteOnMap(route);
@@ -169,22 +182,22 @@ class RoutingProvider extends StateNotifier<RouteState> {
     }
   }
 
-  List<String> showRouteDetails(here_route.Route route) {
+  List<String> _showRouteDetails(here_route.Route route) {
     int estimatedTravelTimeInSeconds = route.duration.inSeconds;
     int lengthInMeters = route.lengthInMeters;
 
     String routeDetails =
-        'Travel Time: ${_formatTime(estimatedTravelTimeInSeconds)}, Length: ${_formatLength(lengthInMeters)}';
+        'Travel Time: ${formatTime(estimatedTravelTimeInSeconds)}, Length: ${formatLength(lengthInMeters)}';
 
     print('Route Details $routeDetails');
 
     return [
-      _formatTime(estimatedTravelTimeInSeconds),
-      _formatLength(lengthInMeters)
+      formatTime(estimatedTravelTimeInSeconds),
+      formatLength(lengthInMeters)
     ];
   }
 
-  String _formatLength(int meters) {
+  String formatLength(int meters) {
     int kilometers = meters ~/ 1000;
     int remainingMeters = meters % 1000;
 
@@ -202,8 +215,8 @@ class RoutingProvider extends StateNotifier<RouteState> {
         .mapController
         ?.mapScene
         .addMapPolyline(routeMapPolyline);
+    ref.read(locationProvider.notifier).shouldFly(doNow: true);
     state = state.copyWith(polyline: routeMapPolyline);
-    state = state;
   }
 
   zoomToRoute(here_route.Route route) {
@@ -227,7 +240,7 @@ class RoutingProvider extends StateNotifier<RouteState> {
     }
   }
 
-  String _formatTime(int sec) {
+  String formatTime(int sec) {
     int hours = sec ~/ 3600;
     int minutes = (sec % 3600) ~/ 60;
 
@@ -236,6 +249,7 @@ class RoutingProvider extends StateNotifier<RouteState> {
 
   void clearRoutes() {
     _removeRoutesFromMap();
+    ref.read(locationProvider.notifier).stopNavModeCamera();
     state = RouteState(
       routingEngine: state.routingEngine,
     );

@@ -218,7 +218,7 @@ class LocationProvider extends StateNotifier<LocationState> {
 
       final loc = here_core.Location.withCoordinates(nextCoordinate);
       loc.time = DateTime.now();
-      loc.bearingInDegrees = state.compass?.heading ?? 0;
+      loc.bearingInDegrees = state.compass?.headingForCameraMode ?? 0;
 
       _locIndicator?.updateLocation(loc);
 
@@ -258,7 +258,6 @@ class LocationProvider extends StateNotifier<LocationState> {
     if (state.isInNavigationMode) {
       flyToInNavMode(
         geoCoordinates: geoCoordinates,
-        durationMillis: durationMillis,
         bowFactor: bowFactor,
       );
       return;
@@ -266,8 +265,9 @@ class LocationProvider extends StateNotifier<LocationState> {
     here_core.GeoCoordinatesUpdate geoCoordinatesUpdate =
         here_core.GeoCoordinatesUpdate.fromGeoCoordinates(geoCoordinates);
     here_map.MapCameraAnimation animation =
-        here_map.MapCameraAnimationFactory.flyToWithZoom(
+        here_map.MapCameraAnimationFactory.flyToWithOrientationAndZoom(
             geoCoordinatesUpdate,
+            here_core.GeoOrientationUpdate(0, 0),
             here_map.MapMeasure(here_map.MapMeasureKind.zoomLevel, 18),
             bowFactor,
             Duration(milliseconds: durationMillis));
@@ -283,29 +283,33 @@ class LocationProvider extends StateNotifier<LocationState> {
   void stopNavModeCamera() {
     if (state.isInNavigationMode) {
       state = state.copyWith(isInNavigationMode: false);
+      var geoCoords = here_core.GeoCoordinates(
+          state.latestLocation!.latitude!, state.latestLocation!.longitude!);
+      flyTo(geoCoordinates: geoCoords, bowFactor: 0, durationMillis: 1000);
     }
   }
 
   void flyToInNavMode({
     required here_core.GeoCoordinates geoCoordinates,
-    int durationMillis = 200,
+    int durationMillis = 1000,
     double bowFactor = 0,
   }) {
     here_core.GeoCoordinatesUpdate geoCoordinatesUpdate =
         here_core.GeoCoordinatesUpdate.fromGeoCoordinates(geoCoordinates);
     here_map.MapCameraAnimation animation =
         here_map.MapCameraAnimationFactory.flyToWithOrientationAndZoom(
-            geoCoordinatesUpdate,
-            here_core.GeoOrientationUpdate(
-              state.compass?.headingForCameraMode ?? 0,
-              60,
-            ),
-            here_map.MapMeasure(
-              here_map.MapMeasureKind.zoomLevel,
-              19,
-            ),
-            bowFactor,
-            Duration(milliseconds: durationMillis));
+      geoCoordinatesUpdate,
+      here_core.GeoOrientationUpdate(
+        state.compass?.headingForCameraMode ?? 0,
+        60,
+      ),
+      here_map.MapMeasure(
+        here_map.MapMeasureKind.zoomLevel,
+        19,
+      ),
+      bowFactor,
+      Duration(milliseconds: durationMillis),
+    );
     state.mapController?.camera.startAnimation(animation);
   }
 
