@@ -1,4 +1,4 @@
-package dev.eduardom.treeroute
+package org.treeroute.app
 
 import io.flutter.embedding.android.FlutterActivity
 
