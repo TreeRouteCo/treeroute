@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:treeroute/pages/map.dart';
 import 'package:treeroute/theme/dark_theme.dart';
 import 'package:treeroute/theme/light_theme.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 void main() async {
   await _initializeHERESDK();
