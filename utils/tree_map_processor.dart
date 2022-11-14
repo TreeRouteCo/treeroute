@@ -3,7 +3,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-void main() async {
+import 'package:supabase/supabase.dart';
+
+void main(List<String> args) async {
   var compressedLocs = [];
   var sourceFile = File("source.json");
   var treeMapLocs = jsonDecode(
@@ -105,7 +107,7 @@ void main() async {
     ));
   }
 
-  print("Done!");
+  print("Done! Writing to file...");
 
   // Open file
   final treeRuoteFile = File('treeRouteReady.json');
@@ -116,6 +118,28 @@ void main() async {
   treeRouteWritableFile.closeSync();
 
   print("Complete, written to ${treeRuoteFile.path}");
+
+  // Check if upload arg and key are provided
+
+  if (args.length < 2 || args[0] != "upload") {
+    print("Skipping upload, no arg or key provided");
+    return;
+  }
+
+  print("Uploading to Supabase...");
+
+  final supabase = SupabaseClient(
+    'https://zpynevawzefrxhnbuump.supabase.co',
+    args[1],
+  );
+
+  const table = 'tree_map_upload';
+
+  print("Uploading ${treeRouteLocs.length} locations to $table...");
+
+  var res = await supabase
+      .from(table)
+      .insert(treeRouteLocs.map((e) => e.toMap()).toList());
 }
 
 bool mayBeStreet(String name) {
@@ -246,7 +270,7 @@ class TreeRouteObj {
       'slug': slug,
       'geoloc': geoloc,
       'type': type,
-      'postalCode': postalCode,
+      'postal_code': postalCode,
       'departments': departments,
       'rooms': rooms,
     };
