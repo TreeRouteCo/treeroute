@@ -111,8 +111,8 @@ void main() async {
   final treeRuoteFile = File('treeRouteReady.json');
   final treeRouteWritableFile =
       await treeRuoteFile.open(mode: FileMode.writeOnly);
-  treeRouteWritableFile.writeStringSync(jsonEncode(treeRouteLocs),
-      encoding: utf8);
+  treeRouteWritableFile.writeStringSync(
+      jsonEncode(treeRouteLocs.map((e) => e.toMap()).toList()));
   treeRouteWritableFile.closeSync();
 
   print("Complete, written to ${treeRuoteFile.path}");
