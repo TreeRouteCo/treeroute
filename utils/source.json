@@ -14840,6 +14840,11 @@
         "lon": -122.17178374
     },
     {
+        "name": "436 mayfield ave",
+        "lat": 37.42189096,
+        "lon": -122.17178374
+    },
+    {
         "name": "florence hellman dinkelspiel memorial auditorium",
         "lat": 37.42406648,
         "lon": -122.16987507
@@ -15361,6 +15366,11 @@
     },
     {
         "name": "general",
+        "lat": 37.41548043,
+        "lon": -122.15002221
+    },
+    {
+        "name": "page mall",
         "lat": 37.41548043,
         "lon": -122.15002221
     },
@@ -17455,6 +17465,11 @@
         "lon": -122.18006887
     },
     {
+        "name": "251 governor&apos;s ave south",
+        "lat": 37.42448897,
+        "lon": -122.18006887
+    },
+    {
         "name": "jeremiah milbank room",
         "lat": 37.4276126,
         "lon": -122.16696462
@@ -18020,6 +18035,11 @@
         "lon": -122.17638039
     },
     {
+        "name": "326 santa teresa st",
+        "lat": 37.42469633,
+        "lon": -122.17638039
+    },
+    {
         "name": "lagunita, eucalipto",
         "lat": 37.42500794,
         "lon": -122.17679058
@@ -18045,7 +18065,17 @@
         "lon": -122.175183
     },
     {
+        "name": "351 santa teresa st",
+        "lat": 37.42515,
+        "lon": -122.175183
+    },
+    {
         "name": "lagunita, norcliffe",
+        "lat": 37.425589,
+        "lon": -122.177059
+    },
+    {
+        "name": "324 santa teresa st",
         "lat": 37.425589,
         "lon": -122.177059
     },
