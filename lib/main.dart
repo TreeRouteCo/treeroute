@@ -13,6 +13,17 @@ import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 void main() async {
   await _initializeHERESDK();
   WidgetsFlutterBinding.ensureInitialized();
+  await supabase.Supabase.initialize(
+    url: 'https://zpynevawzefrxhnbuump.supabase.co',
+    authCallbackUrlHostname: "login-callback",
+    // This is a public key, it's fine to have it in the code
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
+        'eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpweW5ldmF'
+        '3emVmcnhobmJ1dW1wIiwicm9sZSI6ImFub24iLCJpYX'
+        'QiOjE2NjgxMTQ4ODgsImV4cCI6MTk4MzY5MDg4OH0.8'
+        'dd-qJxLo4jZCZJkU2QT3n7u-be2GKcvnzE6mjw9Ixo',
+  );
+
   runApp(const MyApp());
 }
 
