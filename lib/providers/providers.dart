@@ -4,6 +4,7 @@
 //import 'auth_provider.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import 'auth_provider.dart';
 import 'location_provider.dart';
 import 'routing_provider.dart';
 import 'search_provider.dart';
@@ -29,4 +30,8 @@ final routingProvider =
 final searchProvider =
     StateNotifierProvider<SearchProvider, SearchState>((ref) {
   return SearchProvider(ref);
+});
+
+final authProvider = StateNotifierProvider<AuthProvider, AuthState>((ref) {
+  return AuthProvider(ref);
 });
