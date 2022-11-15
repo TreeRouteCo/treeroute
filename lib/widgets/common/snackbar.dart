@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 void successSnackbar(BuildContext context, String text, Widget? icon) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      dismissDirection: DismissDirection.horizontal,
+      dismissDirection: DismissDirection.vertical,
       content: Row(
         children: [
           icon ??

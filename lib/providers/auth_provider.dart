@@ -54,9 +54,11 @@ class AuthProvider extends StateNotifier<AuthState> {
     try {
       await _client.signInWithOtp(
         email: email,
-        emailRedirectTo: "org.treeroute.app://login-callback",
+        emailRedirectTo: "https://treeroute.org/login-callback",
       );
       setMagicLinkSent();
+    } on sb.AuthException catch (e) {
+      setError(e.message);
     } catch (e) {
       setError(e.toString());
     }
