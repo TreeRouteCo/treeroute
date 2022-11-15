@@ -137,7 +137,7 @@ void main(List<String> args) async {
 
   print("Uploading ${treeRouteLocs.length} locations to $table...");
 
-  var res = await supabase
+  await supabase
       .from(table)
       .insert(treeRouteLocs.map((e) => e.toMap()).toList());
 }

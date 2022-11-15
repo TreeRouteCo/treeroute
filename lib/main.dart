@@ -15,7 +15,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await supabase.Supabase.initialize(
     url: 'https://zpynevawzefrxhnbuump.supabase.co',
-    authCallbackUrlHostname: "login-callback",
+    authCallbackUrlHostname: "treeroute.org",
     // This is a public key, it's fine to have it in the code
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
         'eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpweW5ldmF'

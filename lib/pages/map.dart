@@ -1,7 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
-import 'package:treeroute/widgets/account/login_sheet.dart';
+import 'package:treeroute/widgets/common/user_circle.dart';
 import 'package:treeroute/widgets/map/bottom_dynamic.dart';
 import 'package:wakelock/wakelock.dart';
 import '../providers/providers.dart';
@@ -68,31 +67,10 @@ class _MapPageState extends ConsumerState<MapPage> {
                 right: 0,
                 child: BottomDynamicCard(),
               ),
-              Positioned(
+              const Positioned(
                 top: 10,
                 left: 10,
-                // This circle avatar will act as the account button
-                child: CircleAvatar(
-                  radius: 25,
-                  backgroundColor: Theme.of(context).cardColor,
-                  child: IconButton(
-                    icon: const Icon(Icons.account_circle),
-                    onPressed: () {
-                      // open bottom sheet
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(20),
-                            topRight: Radius.circular(20),
-                          ),
-                        ),
-                        builder: (context) => const LoginSheet(),
-                      );
-                    },
-                  ),
-                ),
+                child: UserCircle(),
               ),
               /*if (locationState.latestLocation?.speed != null &&
                   locationState.isLocating)

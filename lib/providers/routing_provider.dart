@@ -186,11 +186,6 @@ class RoutingProvider extends StateNotifier<RouteState> {
     int estimatedTravelTimeInSeconds = route.duration.inSeconds;
     int lengthInMeters = route.lengthInMeters;
 
-    String routeDetails =
-        'Travel Time: ${formatTime(estimatedTravelTimeInSeconds)}, Length: ${formatLength(lengthInMeters)}';
-
-    print('Route Details $routeDetails');
-
     return [
       formatTime(estimatedTravelTimeInSeconds),
       formatLength(lengthInMeters)

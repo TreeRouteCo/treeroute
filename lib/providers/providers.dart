@@ -3,6 +3,7 @@
 //import 'account_provider.dart';
 //import 'auth_provider.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:treeroute/providers/user_provider.dart';
 
 import 'auth_provider.dart';
 import 'location_provider.dart';
@@ -34,4 +35,8 @@ final searchProvider =
 
 final authProvider = StateNotifierProvider<AuthProvider, AuthState>((ref) {
   return AuthProvider(ref);
+});
+
+final userProvider = StateNotifierProvider<UserProvider, UserState>((ref) {
+  return UserProvider(ref);
 });

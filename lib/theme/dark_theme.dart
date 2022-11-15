@@ -9,8 +9,9 @@ ThemeData darkTheme() {
     pageTransitionsTheme: pageTransitionsTheme,
     toggleableActiveColor: const Color.fromARGB(255, 0, 211, 95),
     colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color.fromARGB(255, 0, 211, 95),
-        brightness: Brightness.dark),
+      seedColor: const Color.fromARGB(255, 0, 211, 95),
+      brightness: Brightness.dark,
+    ),
     floatingActionButtonTheme:
         const FloatingActionButtonThemeData(backgroundColor: Color(0xff00a1d3)),
     textTheme: const TextTheme(
