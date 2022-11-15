@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:treeroute/widgets/common/snackbar.dart';
 
 import '../../providers/providers.dart';
 import '../account/account_sheet.dart';
@@ -9,6 +10,7 @@ class UserCircle extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
+    final userState = ref.watch(userProvider);
     return CircleAvatar(
       radius: 25,
       backgroundColor: Theme.of(context).cardColor,
@@ -35,6 +37,14 @@ class UserCircle extends HookConsumerWidget {
               ),
         onPressed: () {
           // open bottom sheet
+          if (userState.userAccount == null) {
+            progressSnackbar(
+              context,
+              "Hold on to your hat, loading your info",
+              null,
+            );
+            return;
+          }
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,

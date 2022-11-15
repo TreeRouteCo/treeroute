@@ -92,7 +92,7 @@ void progressSnackbar(BuildContext context, String text, Widget? icon) {
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       backgroundColor: const Color(0xff424242),
-      duration: const Duration(days: 1),
+      duration: const Duration(seconds: 1),
     ),
   );
 }

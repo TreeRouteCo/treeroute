@@ -96,26 +96,29 @@ class UserProvider extends StateNotifier<UserState> {
             .eq('uid', user.id)
             .maybeSingle() as Map<String, dynamic>?;
         if (editableProfile != null) {
-          setLoading(false);
           state = state.copyWith(
               userAccount: UserAccount(
-            user: user,
-            firstName: editableProfile['first_name'] as String?,
-            lastName: editableProfile['last_name'] as String?,
-            username: editableProfile['username'] as String?,
-            verified: privatePorfile?['verified'] as bool? ?? false,
-            modCampuses: (privatePorfile?['mod_campuses'] as List<dynamic>?)
-                    ?.map((e) => e as int)
-                    .toList() ??
-                [],
-            admin: privatePorfile?['admin'] as bool? ?? false,
-            elevationDescription: privatePorfile?['description'] as String?,
-            bio: editableProfile['bio'] as String?,
-          ));
+                user: user,
+                firstName: editableProfile['first_name'] as String?,
+                lastName: editableProfile['last_name'] as String?,
+                username: editableProfile['username'] as String?,
+                verified: privatePorfile?['verified'] as bool? ?? false,
+                modCampuses: (privatePorfile?['mod_campuses'] as List<dynamic>?)
+                        ?.map((e) => e as int)
+                        .toList() ??
+                    [],
+                admin: privatePorfile?['admin'] as bool? ?? false,
+                elevationDescription: privatePorfile?['description'] as String?,
+                bio: editableProfile['bio'] as String?,
+              ),
+              loading: false);
+          return state.userAccount;
         }
       }
     }
 
     setLoading(false);
+
+    return null;
   }
 }
