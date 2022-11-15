@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
+import 'package:treeroute/widgets/account/login_sheet.dart';
 import 'package:treeroute/widgets/map/bottom_dynamic.dart';
 import 'package:wakelock/wakelock.dart';
 import '../providers/providers.dart';
@@ -10,7 +13,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../widgets/map/focus_on_map_fab.dart';
 //import '../widgets/map/speed_indicator.dart';
-import '../widgets/map/search_card.dart';
 
 class MapPage extends StatefulHookConsumerWidget {
   const MapPage({Key? key}) : super(key: key);
@@ -66,6 +68,32 @@ class _MapPageState extends ConsumerState<MapPage> {
                 left: 0,
                 right: 0,
                 child: BottomDynamicCard(),
+              ),
+              Positioned(
+                top: 10,
+                left: 10,
+                // This circle avatar will act as the account button
+                child: CircleAvatar(
+                  radius: 25,
+                  backgroundColor: Theme.of(context).cardColor,
+                  child: IconButton(
+                    icon: const Icon(Icons.account_circle),
+                    onPressed: () {
+                      // open bottom sheet
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(20),
+                          ),
+                        ),
+                        builder: (context) => const LoginSheet(),
+                      );
+                    },
+                  ),
+                ),
               ),
               /*if (locationState.latestLocation?.speed != null &&
                   locationState.isLocating)

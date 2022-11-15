@@ -1,12 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:here_sdk/core.dart' as here_core;
 import 'package:here_sdk/core.errors.dart';
-import 'package:here_sdk/core.threading.dart';
 import 'package:here_sdk/search.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-import 'package:treeroute/providers/providers.dart';
 
 class SearchState {
   final SupabaseClient? supaClient;

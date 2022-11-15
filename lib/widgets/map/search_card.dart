@@ -15,9 +15,7 @@ class SearchCard extends StatefulHookConsumerWidget {
 class _SearchCardState extends ConsumerState<SearchCard> {
   @override
   Widget build(BuildContext context) {
-    final locationState = ref.watch(locationProvider.notifier);
     final searchState = ref.watch(searchProvider);
-    final searchStateNotifier = ref.watch(searchProvider.notifier);
 
     final textController = useTextEditingController(
       text: searchState.searchQuery,

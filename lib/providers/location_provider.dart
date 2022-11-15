@@ -12,6 +12,7 @@ import 'package:here_sdk/routing.dart' as here_route;
 import 'package:here_sdk/search.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:location/location.dart';
+import 'package:permission_handler/permission_handler.dart' as perm;
 
 import '../widgets/common/location_access_expl.dart';
 
@@ -165,7 +166,7 @@ class LocationProvider extends StateNotifier<LocationState> {
                       actions: [
                         TextButton(
                           onPressed: () {
-                            // TODO: Open App Settings
+                            perm.openAppSettings();
                             Beamer.of(context).popRoute();
                           },
                           child: const Text("Open App Settings"),
