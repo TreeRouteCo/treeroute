@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UserAccount {
-  User user;
+  User? user;
   String? firstName;
   String? lastName;
   String? username;
@@ -15,7 +15,7 @@ class UserAccount {
   String? bio;
 
   UserAccount({
-    required this.user,
+    this.user,
     this.firstName,
     this.lastName,
     this.username,

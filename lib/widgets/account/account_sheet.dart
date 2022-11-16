@@ -16,7 +16,7 @@ class _AccountSheetState extends ConsumerState<AccountSheet> {
   Widget build(BuildContext context) {
     var authProv = ref.read(authProvider.notifier);
     var authState = ref.watch(authProvider);
-    var userProv = ref.read(userProvider.notifier);
+    //var userProv = ref.read(userProvider.notifier);
     var userState = ref.watch(userProvider);
 
     if (authState.session == null) {
@@ -79,7 +79,7 @@ class _AccountSheetState extends ConsumerState<AccountSheet> {
                           size: 100,
                         ),
                       ),
-                      if (userState.userAccount!.verified)
+                      if (userState.userAccount?.verified ?? false)
                         Positioned(
                           bottom: 0,
                           right: 0,
@@ -97,8 +97,8 @@ class _AccountSheetState extends ConsumerState<AccountSheet> {
                             ),
                           ),
                         ),
-                      // Admin Icon
-                      if (userState.userAccount!.admin)
+                      // Mod Icon
+                      if (userState.userAccount?.modCampuses != null)
                         Positioned(
                           bottom: 0,
                           left: 0,
@@ -110,7 +110,26 @@ class _AccountSheetState extends ConsumerState<AccountSheet> {
                               color: Theme.of(context).colorScheme.secondary,
                             ),
                             child: Icon(
-                              Icons.admin_panel_settings,
+                              Icons.shield_outlined,
+                              color: Theme.of(context).colorScheme.onSecondary,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      // Admin Icon
+                      if (userState.userAccount?.admin ?? false)
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                            child: Icon(
+                              Icons.admin_panel_settings_rounded,
                               color: Theme.of(context).colorScheme.onSecondary,
                               size: 20,
                             ),

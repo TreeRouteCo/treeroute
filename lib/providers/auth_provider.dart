@@ -31,8 +31,10 @@ class AuthState {
 class AuthProvider extends StateNotifier<AuthState> {
   final sb.GoTrueClient _client = sb.Supabase.instance.client.auth;
 
+  final Ref ref;
+
   // on init
-  AuthProvider(Ref ref) : super(AuthState.preInit()) {
+  AuthProvider(this.ref) : super(AuthState.preInit()) {
     _client.onAuthStateChange.listen((event) {
       if (event.event == sb.AuthChangeEvent.signedIn) {
         state = AuthState.authenticated(event.session!);
@@ -83,6 +85,7 @@ class AuthProvider extends StateNotifier<AuthState> {
 
   void logOut() async {
     await _client.signOut();
+    ref.read(userProvider.notifier).clear();
     setInitial();
   }
 

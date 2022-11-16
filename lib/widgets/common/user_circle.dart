@@ -5,12 +5,38 @@ import 'package:treeroute/widgets/common/snackbar.dart';
 import '../../providers/providers.dart';
 import '../account/account_sheet.dart';
 
-class UserCircle extends HookConsumerWidget {
+class UserCircle extends StatefulHookConsumerWidget {
   const UserCircle({super.key});
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<UserCircle> createState() => _UserCircleState();
+}
+
+class _UserCircleState extends ConsumerState<UserCircle> {
+  var loggedIn = false;
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final userState = ref.watch(userProvider);
+
+    if (userState.userAccount != null && !loggedIn) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        progressSnackbar(
+          context,
+          "Welcome back, "
+          "${userState.userAccount?.firstName ?? authState.session?.user.email}",
+          const Icon(
+            Icons.face_rounded,
+            color: Colors.white,
+          ),
+        );
+      });
+      loggedIn = true;
+    } else if (authState.session == null && loggedIn) {
+      loggedIn = false;
+    }
+
     return CircleAvatar(
       radius: 25,
       backgroundColor: Theme.of(context).cardColor,
@@ -37,7 +63,7 @@ class UserCircle extends HookConsumerWidget {
               ),
         onPressed: () {
           // open bottom sheet
-          if (userState.userAccount == null) {
+          if (userState.loading) {
             progressSnackbar(
               context,
               "Hold on to your hat, loading your info",
