@@ -39,6 +39,8 @@ class _UserCircleState extends ConsumerState<UserCircle> {
         !userState.loading &&
         userState.user != null) {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        print(
+            "User profile not found: Beaming to /edit-profile/${userState.user?.id}");
         Beamer.of(context).beamToNamed('/edit-profile/${userState.user?.id}');
       });
     } else if (authState.session == null && loggedIn) {

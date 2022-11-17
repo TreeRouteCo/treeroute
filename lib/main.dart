@@ -11,7 +11,6 @@ import 'package:treeroute/theme/dark_theme.dart';
 import 'package:treeroute/theme/light_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
-import 'models/user.dart';
 
 void main() async {
   await _initializeHERESDK();
@@ -66,7 +65,7 @@ final Provider<BeamerDelegate> beamerDelegateProvider =
         '/edit-profile/:id': (context, state, data) => BeamPage(
               key: ValueKey('editProfile-${state.pathParameters['id']}'),
               child: EditProfilePage(
-                uidToEdit: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
+                uidToEdit: state.pathParameters['id'] ?? '',
               ),
             ),
       },
