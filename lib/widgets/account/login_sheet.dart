@@ -62,6 +62,7 @@ class _LoginSheetState extends ConsumerState<LoginSheet> {
             TextField(
               keyboardType: TextInputType.emailAddress,
               controller: emailText,
+              autofocus: true,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Email',

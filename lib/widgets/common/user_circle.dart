@@ -20,12 +20,12 @@ class _UserCircleState extends ConsumerState<UserCircle> {
     final authState = ref.watch(authProvider);
     final userState = ref.watch(userProvider);
 
-    if (userState.userAccount != null && !loggedIn) {
+    if (userState.profile != null && !loggedIn) {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         progressSnackbar(
           context,
           "Welcome back, "
-          "${userState.userAccount?.firstName ?? authState.session?.user.email}",
+          "${userState.profile?.firstName ?? authState.session?.user.email}",
           const Icon(
             Icons.face_rounded,
             color: Colors.white,

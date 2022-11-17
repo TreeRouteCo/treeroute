@@ -7,36 +7,40 @@ import 'package:treeroute/models/user.dart';
 import 'package:treeroute/providers/providers.dart';
 
 class UserState {
-  final UserAccount? userAccount;
+  final Profile? profile;
+  final User? user;
   final bool loading;
 
   UserState({
-    this.userAccount,
+    this.profile,
+    this.user,
     this.loading = false,
   });
 
   UserState copyWith({
-    UserAccount? userAccount,
+    Profile? profile,
+    User? user,
     bool? loading,
   }) {
     return UserState(
-      userAccount: userAccount ?? this.userAccount,
+      profile: profile ?? this.profile,
+      user: user ?? this.user,
       loading: loading ?? this.loading,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'userAccount': userAccount?.toMap(),
+      'profile': profile?.toMap(),
+      'user': user?.toJson(),
       'loading': loading,
     };
   }
 
   factory UserState.fromMap(Map<String, dynamic> map) {
     return UserState(
-      userAccount: map['userAccount'] != null
-          ? UserAccount.fromMap(map['userAccount'])
-          : null,
+      profile: map['profile'] != null ? Profile.fromMap(map['profile']) : null,
+      user: map['user'] != null ? User.fromJson(map['user']) : null,
       loading: map['loading'] ?? false,
     );
   }
@@ -48,19 +52,20 @@ class UserState {
 
   @override
   String toString() =>
-      'UserState(userAccount: $userAccount, loading: $loading)';
+      'UserState(profile: $profile, user: $user, loading: $loading)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
     return other is UserState &&
-        other.userAccount == userAccount &&
+        other.profile == profile &&
+        other.user == user &&
         other.loading == loading;
   }
 
   @override
-  int get hashCode => userAccount.hashCode ^ loading.hashCode;
+  int get hashCode => profile.hashCode ^ user.hashCode ^ loading.hashCode;
 }
 
 class UserProvider extends StateNotifier<UserState> {
@@ -68,8 +73,12 @@ class UserProvider extends StateNotifier<UserState> {
 
   UserProvider(this.ref) : super(UserState());
 
-  void setUser(UserAccount userAccount) {
-    state = state.copyWith(userAccount: userAccount);
+  void setProfile(Profile profile) {
+    state = state.copyWith(profile: profile);
+  }
+
+  void setUser(User user) {
+    state = state.copyWith(user: user);
   }
 
   void setLoading(bool loading) {
@@ -80,94 +89,64 @@ class UserProvider extends StateNotifier<UserState> {
     state = UserState();
   }
 
-  Future<UserAccount?> getUser({String? id}) async {
+  Future<Profile?> getProfile({String? id}) async {
     setLoading(true);
+    final loggedInId = ref.read(authProvider).session?.user.id;
+
     if (id == null) {
-      final authState = ref.read(authProvider);
-      if (authState.session == null) {
+      if (id == loggedInId) {
         setLoading(false);
-        return null;
-      } else {
-        final user = authState.session!.user;
-        final editableProfile = await Supabase.instance.client
-            .from('users')
-            .select()
-            .eq('uid', user.id)
-            .maybeSingle() as Map<String, dynamic>?;
-        final privatePorfile = await Supabase.instance.client
-            .from('users_private')
-            .select()
-            .eq('uid', user.id)
-            .maybeSingle() as Map<String, dynamic>?;
-        if (editableProfile != null) {
-          state = state.copyWith(
-              userAccount: UserAccount(
-                user: user,
-                firstName: editableProfile['first_name'] as String?,
-                lastName: editableProfile['last_name'] as String?,
-                username: editableProfile['username'] as String?,
-                verified: privatePorfile?['verified'] as bool? ?? false,
-                modCampuses: (privatePorfile?['mod_campuses'] as List<dynamic>?)
-                        ?.map((e) => e as int)
-                        .toList() ??
-                    [],
-                admin: privatePorfile?['admin'] as bool? ?? false,
-                elevationDescription: privatePorfile?['description'] as String?,
-                bio: editableProfile['bio'] as String?,
-              ),
-              loading: false);
-          return state.userAccount;
-        }
+        throw "No session or ID found";
       }
-    } else {
-      final editableProfile = await Supabase.instance.client
-          .from('users')
-          .select()
-          .eq('uid', id)
-          .maybeSingle() as Map<String, dynamic>?;
-      final privatePorfile = await Supabase.instance.client
-          .from('users_private')
-          .select()
-          .eq('uid', id)
-          .maybeSingle() as Map<String, dynamic>?;
-      if (editableProfile != null) {
-        setLoading(false);
-        return UserAccount(
-          firstName: editableProfile['first_name'] as String?,
-          lastName: editableProfile['last_name'] as String?,
-          username: editableProfile['username'] as String?,
-          verified: privatePorfile?['verified'] as bool? ?? false,
-          modCampuses: (privatePorfile?['mod_campuses'] as List<dynamic>?)
-                  ?.map((e) => e as int)
-                  .toList() ??
-              [],
-          admin: privatePorfile?['admin'] as bool? ?? false,
-          elevationDescription: privatePorfile?['description'] as String?,
-          bio: editableProfile['bio'] as String?,
-        );
-      }
+      id = loggedInId;
     }
 
-    setLoading(false);
+    var response = await Supabase.instance.client
+        .from('users')
+        .select()
+        .eq('uid', id)
+        .maybeSingle() as Map<String, dynamic>?;
 
-    return null;
-  }
+    final userAttributesResponse = await Supabase.instance.client
+        .from('users_private')
+        .select()
+        .eq('uid', id)
+        .maybeSingle() as Map<String, dynamic>?;
 
-  Future<UserAccount?> updateUser(UserAccount userAccount,
-      {String? uid}) async {
-    setLoading(true);
-    final authState = ref.read(authProvider);
-    Map<String, dynamic>? newUser;
-    if (authState.session == null) {
+    if (response == null || userAttributesResponse == null) {
       setLoading(false);
       return null;
     } else {
-      uid ??= authState.session!.user.id;
+      final profile = Profile.fromMap({
+        ...response,
+        ...userAttributesResponse,
+      });
+      if (loggedInId == id) {
+        setProfile(profile);
+      }
+      setLoading(false);
+      return profile;
+    }
+  }
 
-        // This is also enforced on the backend. For my feelow applied 
-        // cybersec members, of course.
+  Future<Profile?> updateProfile(Profile userAccount, {String? uid}) async {
+    setLoading(true);
+    final authState = ref.read(authProvider);
+    Map<String, dynamic>? newUser;
+    Profile? newProfile;
+    if (authState.session == null) {
+      setLoading(false);
+      throw "Must be logged in to update profiles";
+    } else {
+      uid ??= state.user?.id;
+      if (uid == null) {
+        setLoading(false);
+        throw "No session or ID found";
+      }
+
+      // This is also enforced on the backend. (Good try tho <3).
       if (uid != authState.session!.user.id &&
-          (state.userAccount?.admin ?? false)) {
+          (state.profile?.admin ?? false)) {
         setLoading(false);
         throw "User is not authorized to update this user's profile";
       }
@@ -183,27 +162,14 @@ class UserProvider extends StateNotifier<UserState> {
           .eq('uid', uid)
           .single() as Map<String, dynamic>?;
 
-      if (newUser != null && uid != authState.session!.user.id) {
-        state = state.copyWith(
-            userAccount: UserAccount(
-              user: state.userAccount!.user,
-              firstName: newUser['first_name'] as String?,
-              lastName: newUser['last_name'] as String?,
-              username: newUser['username'] as String?,
-              bio: newUser['bio'] as String?,
-            ),
-            loading: false);
-        return state.userAccount;
+      if (newUser != null) newProfile = Profile.fromMap(newUser);
+
+      if (newProfile != null && uid != state.user?.id) {
+        setProfile(newProfile);
       }
 
       setLoading(false);
-      return UserAccount(
-        user: state.userAccount!.user,
-        firstName: newUser?['first_name'] as String?,
-        lastName: newUser?['last_name'] as String?,
-        username: newUser?['username'] as String?,
-        bio: newUser?['bio'] as String?,
-      );
+      return newUser != null ? Profile.fromMap(newUser) : null;
     }
   }
 }

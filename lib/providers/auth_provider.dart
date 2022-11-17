@@ -38,12 +38,14 @@ class AuthProvider extends StateNotifier<AuthState> {
     _client.onAuthStateChange.listen((event) {
       if (event.event == sb.AuthChangeEvent.signedIn) {
         state = AuthState.authenticated(event.session!);
-        ref.read(userProvider.notifier).getUser();
+        ref.read(userProvider.notifier).getProfile();
+        ref.read(userProvider.notifier).setUser(event.session!.user);
       } else if (event.event == sb.AuthChangeEvent.signedOut) {
         state = AuthState.initial();
       } else if (event.event == sb.AuthChangeEvent.userUpdated) {
         state = AuthState.authenticated(event.session!);
-        ref.read(userProvider.notifier).getUser();
+        ref.read(userProvider.notifier).getProfile();
+        ref.read(userProvider.notifier).setUser(event.session!.user);
       } else if (event.event == sb.AuthChangeEvent.passwordRecovery) {
         state = AuthState.magicLinkSent();
       } else if (event.event == sb.AuthChangeEvent.userDeleted) {
@@ -54,7 +56,8 @@ class AuthProvider extends StateNotifier<AuthState> {
     sb.SupabaseAuth.instance.initialSession.then((initialSession) {
       if (initialSession != null) {
         state = AuthState.authenticated(initialSession);
-        ref.read(userProvider.notifier).getUser();
+        ref.read(userProvider.notifier).getProfile();
+        ref.read(userProvider.notifier).setUser(initialSession.user);
       } else {
         state = AuthState.initial();
       }

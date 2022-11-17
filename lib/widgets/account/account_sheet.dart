@@ -79,7 +79,7 @@ class _AccountSheetState extends ConsumerState<AccountSheet> {
                           size: 100,
                         ),
                       ),
-                      if (userState.userAccount?.verified ?? false)
+                      if (userState.profile?.verified ?? false)
                         Positioned(
                           bottom: 0,
                           right: 0,
@@ -98,7 +98,7 @@ class _AccountSheetState extends ConsumerState<AccountSheet> {
                           ),
                         ),
                       // Mod Icon
-                      if (userState.userAccount?.modCampuses != null)
+                      if (userState.profile?.modCampuses != null)
                         Positioned(
                           bottom: 0,
                           left: 0,
@@ -117,7 +117,7 @@ class _AccountSheetState extends ConsumerState<AccountSheet> {
                           ),
                         ),
                       // Admin Icon
-                      if (userState.userAccount?.admin ?? false)
+                      if (userState.profile?.admin ?? false)
                         Positioned(
                           bottom: 0,
                           left: 0,
@@ -141,12 +141,12 @@ class _AccountSheetState extends ConsumerState<AccountSheet> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        userState.userAccount?.firstName ?? "No First Name Set",
+                        userState.profile?.firstName ?? "No First Name Set",
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        userState.userAccount?.lastName ?? "No Last Name Set",
+                        userState.profile?.lastName ?? "No Last Name Set",
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                       const SizedBox(height: 10),
