@@ -6,7 +6,10 @@ class FocusOnMapFab extends HookConsumerWidget {
   const FocusOnMapFab({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(locationProvider).shouldFly;
+    final locationState = ref.watch(locationProvider);
+    if (locationState.shouldFly && locationState.isLocating) {
+      return const SizedBox();
+    }
     return FloatingActionButton(
       onPressed: () {
         ref.read(locationProvider.notifier).shouldFly();

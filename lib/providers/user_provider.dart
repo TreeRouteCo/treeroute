@@ -131,10 +131,9 @@ class UserProvider extends StateNotifier<UserState> {
 
   Future<Profile?> updateProfile(Profile userAccount, {String? uid}) async {
     setLoading(true);
-    final authState = ref.read(authProvider);
     Map<String, dynamic>? newUser;
     Profile? newProfile;
-    if (authState.session == null) {
+    if (state.user == null) {
       setLoading(false);
       throw "Must be logged in to update profiles";
     } else {
@@ -145,7 +144,7 @@ class UserProvider extends StateNotifier<UserState> {
       }
 
       // This is also enforced on the backend. (Good try tho <3).
-      if (uid != authState.session!.user.id &&
+      if (uid != state.user!.id &&
           (state.profile?.admin ?? false)) {
         setLoading(false);
         throw "User is not authorized to update this user's profile";
@@ -158,6 +157,7 @@ class UserProvider extends StateNotifier<UserState> {
             'last_name': userAccount.lastName,
             'username': userAccount.username,
             'bio': userAccount.bio,
+            'campus': userAccount.campusId,
           })
           .eq('uid', uid)
           .single() as Map<String, dynamic>?;

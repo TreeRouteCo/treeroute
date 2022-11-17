@@ -20,7 +20,10 @@ class _UserCircleState extends ConsumerState<UserCircle> {
     final authState = ref.watch(authProvider);
     final userState = ref.watch(userProvider);
 
+    print("Building UserCircle");
+
     if (userState.profile != null && !loggedIn) {
+      print("Welcome user message");
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         progressSnackbar(
           context,

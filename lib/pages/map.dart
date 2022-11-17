@@ -22,10 +22,8 @@ class MapPage extends StatefulHookConsumerWidget {
 class _MapPageState extends ConsumerState<MapPage> {
   @override
   Widget build(BuildContext context) {
-    final locationState = ref.watch(locationProvider);
+    final locationState = ref.read(locationProvider);
     final locationStateNotifier = ref.read(locationProvider.notifier);
-    //final routingState = ref.watch(routingProvider);
-    //final routingStateNotifier = ref.read(routingProvider.notifier);
 
     if (locationStateNotifier.darkModeMap != null) {
       if (locationStateNotifier.darkModeMap! &&
@@ -36,6 +34,8 @@ class _MapPageState extends ConsumerState<MapPage> {
         locationStateNotifier.loadCustomMapStyle(true);
       }
     }
+
+    print("Building MapPage");
 
     Wakelock.enable();
 
@@ -55,12 +55,12 @@ class _MapPageState extends ConsumerState<MapPage> {
                 child: HereMap(onMapCreated: _onMapCreated),
               ),
               //const AppBarCard(),
-              if (!locationState.shouldFly && locationState.isLocating)
-                const Positioned(
-                  top: 25,
-                  right: 25,
-                  child: FocusOnMapFab(),
-                ),
+
+              const Positioned(
+                top: 25,
+                right: 25,
+                child: FocusOnMapFab(),
+              ),
               const Positioned(
                 bottom: 0,
                 left: 0,
@@ -70,7 +70,9 @@ class _MapPageState extends ConsumerState<MapPage> {
               const Positioned(
                 top: 10,
                 left: 10,
-                child: UserCircle(),
+                child: UserCircle(
+                  key: Key("map-user-circle"),
+                ),
               ),
               /*if (locationState.latestLocation?.speed != null &&
                   locationState.isLocating)
@@ -87,6 +89,7 @@ class _MapPageState extends ConsumerState<MapPage> {
   }
 
   void _onMapCreated(HereMapController hereMapController) async {
+    print("map created");
     final locationState = ref.read(locationProvider);
     final locationStateNotifier = ref.read(locationProvider.notifier);
 
@@ -95,31 +98,19 @@ class _MapPageState extends ConsumerState<MapPage> {
     locationStateNotifier
         .loadCustomMapStyle(Theme.of(context).brightness == Brightness.dark);
 
-    var shouldFly = ref.read(locationProvider).shouldFly;
-
     hereMapController.gestures.panListener = PanListener((p0, p1, p2, p3) {
-      if (mounted && shouldFly) {
-        setState(() {
-          ref.read(locationProvider).shouldFly = false;
-        });
-      }
+      ref.read(locationProvider.notifier).shouldNotFly();
     });
     hereMapController.gestures.doubleTapListener = DoubleTapListener((p0) {
-      setState(() {
-        ref.read(locationProvider).shouldFly = false;
-      });
+      ref.read(locationProvider.notifier).shouldNotFly();
     });
     hereMapController.gestures.pinchRotateListener =
         PinchRotateListener((p0, p1, p2, p3, p4) {
-      setState(() {
-        ref.read(locationProvider).shouldFly = false;
-      });
+      ref.read(locationProvider.notifier).shouldNotFly();
     });
     hereMapController.gestures.twoFingerPanListener =
         TwoFingerPanListener((p0, p1, p2, p3) {
-      setState(() {
-        ref.read(locationProvider).shouldFly = false;
-      });
+      ref.read(locationProvider.notifier).shouldNotFly();
     });
 
     hereMapController.camera.lookAtPointWithMeasure(

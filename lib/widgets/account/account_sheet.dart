@@ -23,6 +23,15 @@ class _AccountSheetState extends ConsumerState<AccountSheet> {
       return const LoginSheet();
     }
 
+    // Add first and last name for full name
+
+    var fullName = '${userState.profile?.firstName ?? ''} '
+        '${userState.profile?.lastName ?? ''}';
+
+    if (fullName.trim().isEmpty) {
+      fullName = "No name set";
+    }
+
     return Padding(
       padding:
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -141,12 +150,12 @@ class _AccountSheetState extends ConsumerState<AccountSheet> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        userState.profile?.firstName ?? "No First Name Set",
+                        fullName,
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        userState.profile?.lastName ?? "No Last Name Set",
+                        userState.profile?.username ?? "No username set",
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                       const SizedBox(height: 10),

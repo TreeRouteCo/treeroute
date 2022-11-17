@@ -212,6 +212,10 @@ class LocationProvider extends StateNotifier<LocationState> {
     }
   }
 
+  void shouldNotFly() {
+    state = state.copyWith(shouldFly: false);
+  }
+
   void _updateMap(LocationData next) {
     if (state.mapController != null) {
       final nextCoordinate =
