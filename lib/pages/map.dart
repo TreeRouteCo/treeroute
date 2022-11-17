@@ -22,7 +22,6 @@ class MapPage extends StatefulHookConsumerWidget {
 class _MapPageState extends ConsumerState<MapPage> {
   @override
   Widget build(BuildContext context) {
-    final locationState = ref.read(locationProvider);
     final locationStateNotifier = ref.read(locationProvider.notifier);
 
     if (locationStateNotifier.darkModeMap != null) {
@@ -34,8 +33,6 @@ class _MapPageState extends ConsumerState<MapPage> {
         locationStateNotifier.loadCustomMapStyle(true);
       }
     }
-
-    print("Building MapPage");
 
     Wakelock.enable();
 
@@ -89,7 +86,6 @@ class _MapPageState extends ConsumerState<MapPage> {
   }
 
   void _onMapCreated(HereMapController hereMapController) async {
-    print("map created");
     final locationState = ref.read(locationProvider);
     final locationStateNotifier = ref.read(locationProvider.notifier);
 
