@@ -5,6 +5,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:treeroute/providers/user_provider.dart';
 
+import 'api_search_provider.dart';
 import 'auth_provider.dart';
 import 'campus_provider.dart';
 import 'location_provider.dart';
@@ -45,4 +46,8 @@ final userProvider = StateNotifierProvider<UserProvider, UserState>((ref) {
 final campusProvider =
     StateNotifierProvider<CampusProvider, CampusState>((ref) {
   return CampusProvider(ref);
+});
+
+final placeProvider = StateNotifierProvider<PlaceProvider, PlaceState>((ref) {
+  return PlaceProvider(ref);
 });

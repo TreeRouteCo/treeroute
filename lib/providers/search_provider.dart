@@ -105,6 +105,7 @@ class SearchProvider extends StateNotifier<SearchState> {
     String text,
     void Function(SearchError? error, List<Suggestion>? suggestions) callback,
   ) {
+    ref.read(placeProvider.notifier).searchPlaces(text);
     here_core.GeoCoordinates centerGeoCoordinates = here_core.GeoCoordinates(
       ref.read(locationProvider).latestLocation?.latitude ?? 0,
       ref.read(locationProvider).latestLocation?.longitude ?? 0,
