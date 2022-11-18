@@ -1,3 +1,4 @@
+import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:treeroute/providers/providers.dart';
@@ -58,7 +59,10 @@ class _AccountSheetState extends ConsumerState<AccountSheet> {
                 Expanded(child: Container()),
                 IconButton(
                   icon: const Icon(Icons.edit),
-                  onPressed: () {},
+                  onPressed: () {
+                    Beamer.of(context)
+                        .beamToNamed('/edit-profile/${userState.user?.id}');
+                  },
                 ),
               ],
             ),
@@ -107,7 +111,8 @@ class _AccountSheetState extends ConsumerState<AccountSheet> {
                           ),
                         ),
                       // Mod Icon
-                      if (userState.profile?.modCampuses != null)
+                      if (userState.profile?.modCampuses != null &&
+                          userState.profile!.modCampuses.isNotEmpty)
                         Positioned(
                           bottom: 0,
                           left: 0,
