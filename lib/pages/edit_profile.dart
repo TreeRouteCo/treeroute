@@ -2,6 +2,7 @@ import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:treeroute/models/campus.dart';
 import 'package:treeroute/models/user.dart';
 
 import '../providers/providers.dart';
@@ -18,8 +19,12 @@ class EditProfilePage extends StatefulHookConsumerWidget {
 
 class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   Profile? profile;
-  var loading = false;
+  List<Campus> campuses = [];
+  var loading = true;
+  var updating = false;
   var error = false;
+  static final formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     final userState = ref.read(userProvider);
@@ -37,13 +42,20 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     final usernameFocusNode = useFocusNode();
     final bioFocusNode = useFocusNode();
 
-    final _formKey = GlobalKey<FormState>();
+    if (campuses.isEmpty) {
+      ref.read(campusProvider.notifier).getCampuses().then((value) {
+        setState(() {
+          campuses = value;
+        });
+      });
+    }
 
     try {
-      if (userState.user?.id == widget.uidToEdit) {
-        profile = userState.profile;
-        //loading = false;
-      } else if (userState.user?.id != widget.uidToEdit) {
+      if (userState.user?.id == widget.uidToEdit && profile == null) {
+        profile = userState.profile ?? Profile(campusId: 1);
+        loading = false;
+        setState(() {});
+      } else if (userState.user?.id != widget.uidToEdit && profile == null) {
         WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
           profile = await userProv.getProfile(id: widget.uidToEdit);
           loading = false;
@@ -63,7 +75,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
     return Material(
       // Sliver app bar large
-      color: Theme.of(context).appBarTheme.backgroundColor,
+      color: Theme.of(context).cardColor,
       child: CustomScrollView(
         slivers: [
           SliverAppBar.large(
@@ -77,7 +89,32 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
             actions: <Widget>[
               IconButton(
                 icon: const Icon(Icons.check_rounded),
-                onPressed: () {},
+                onPressed: () async {
+                  if (formKey.currentState!.validate()) {
+                    setState(() {
+                      updating = true;
+                    });
+                    try {
+                      await userProv.updateProfile(
+                        profile!,
+                        uid: widget.uidToEdit,
+                      );
+                      if (userState.user?.id == widget.uidToEdit) {
+                        await userProv.getProfile();
+                      }
+                    } catch (e) {
+                      error = true;
+                    }
+
+                    setState(() {
+                      updating = false;
+                    });
+
+                    if (mounted && !error) {
+                      Beamer.of(context).beamBack();
+                    }
+                  }
+                },
               ),
             ],
           ),
@@ -105,14 +142,16 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                       ),
                     ],
                   )
-                : loading
+                : loading || updating
                     ? Column(
                         children: [
                           const SizedBox(
                             height: 100,
                           ),
                           Text(
-                            'Loading Profile...',
+                            loading
+                                ? 'Loading Profile...'
+                                : 'Updating Profile...',
                             style: Theme.of(context).textTheme.headline5,
                           ),
                           const SizedBox(height: 50),
@@ -120,7 +159,12 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                         ],
                       )
                     : Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.only(
+                          left: 20,
+                          right: 20,
+                          top: 20,
+                          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+                        ),
                         decoration: BoxDecoration(
                           color: Theme.of(context).cardColor,
                           borderRadius: const BorderRadius.only(
@@ -129,11 +173,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                           ),
                         ),
                         child: Form(
-                          key: _formKey,
+                          key: formKey,
                           child: Column(
                             children: [
                               SizedBox(
-                                height: 150,
+                                height: 180,
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -175,6 +219,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                               border: OutlineInputBorder(),
                                             ),
                                             validator: (value) {
+                                              value = value?.trim();
                                               if (value == null ||
                                                   value.isEmpty) {
                                                 return 'Please enter your first name';
@@ -189,6 +234,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                                   .requestFocus(
                                                       lastNameFocusNode);
                                             },
+                                            onChanged: (value) {
+                                              profile!.firstName = value;
+                                            },
                                           ),
                                           TextFormField(
                                             controller: lastNameController,
@@ -197,6 +245,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                               border: OutlineInputBorder(),
                                             ),
                                             validator: (value) {
+                                              value = value?.trim();
                                               if (value == null ||
                                                   value.isEmpty) {
                                                 return 'Please enter your last name';
@@ -210,6 +259,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                               FocusScope.of(context)
                                                   .requestFocus(
                                                       usernameFocusNode);
+                                            },
+                                            onChanged: (value) {
+                                              profile!.lastName = value;
                                             },
                                           ),
                                         ],
@@ -226,10 +278,16 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                   border: OutlineInputBorder(),
                                 ),
                                 validator: (value) {
+                                  value = value?.trim();
                                   if (value == null || value.isEmpty) {
-                                    return 'Please enter your username';
+                                    return null;
                                   }
-                                  return null;
+
+                                  if (value.length > 20) {
+                                    return 'Username must be less than 20 characters';
+                                  } else if (value.length < 3) {
+                                    return 'Username must be at least 3 characters';
+                                  }
                                 },
                                 textInputAction: TextInputAction.next,
                                 focusNode: usernameFocusNode,
@@ -237,6 +295,14 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                   FocusScope.of(context)
                                       .requestFocus(bioFocusNode);
                                 },
+                                onChanged: (value) {
+                                  profile!.username = value;
+                                },
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                "Hint: if you don't want to be searchable don't set a username!",
+                                style: Theme.of(context).textTheme.caption,
                               ),
                               const SizedBox(height: 20),
                               TextFormField(
@@ -249,18 +315,62 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                   border: OutlineInputBorder(),
                                 ),
                                 validator: (value) {
+                                  value = value?.trim();
                                   if (value == null || value.isEmpty) {
-                                    return 'Please enter your bio';
+                                    return null;
                                   }
-                                  return null;
+
+                                  if (value.length > 200) {
+                                    return 'Bio must be less than 200 characters';
+                                  }
                                 },
                                 textInputAction: TextInputAction.newline,
                                 focusNode: bioFocusNode,
                                 onFieldSubmitted: (value) {
                                   FocusScope.of(context).unfocus();
                                 },
+                                onChanged: (value) {
+                                  profile!.bio = value;
+                                },
                               ),
-                              VerticalDivider(),
+                              const SizedBox(height: 20),
+                              const VerticalDivider(),
+                              const SizedBox(height: 20),
+                              Text(
+                                "Campus Selection",
+                                style: Theme.of(context).textTheme.subtitle1,
+                              ),
+                              const SizedBox(height: 20),
+                              DropdownButtonFormField<String>(
+                                value: (profile!.campusId).toString(),
+                                decoration: const InputDecoration(
+                                  labelText: 'Campus',
+                                  border: OutlineInputBorder(),
+                                ),
+                                items: campuses.map<DropdownMenuItem<String>>(
+                                    (Campus value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value.id.toString(),
+                                    child: Text(value.name),
+                                  );
+                                }).toList(),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    profile?.campusId = int.parse(newValue!);
+                                  });
+                                },
+                              ),
+                              if (userState.profile?.admin ?? false) ...[
+                                const SizedBox(height: 20),
+                                const VerticalDivider(),
+                                const SizedBox(height: 20),
+                                Text(
+                                  "Admin Settings",
+                                  style: Theme.of(context).textTheme.subtitle1,
+                                ),
+                                const SizedBox(height: 20),
+                                const Text("Coming Soon")
+                              ]
                             ],
                           ),
                         ),
@@ -268,33 +378,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class ScrollOrFitBottom extends StatelessWidget {
-  final Widget scrollableContent;
-  final Widget bottomContent;
-
-  ScrollOrFitBottom({
-    required this.scrollableContent,
-    required this.bottomContent,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: <Widget>[
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: Column(
-            children: <Widget>[
-              Expanded(child: scrollableContent),
-              bottomContent
-            ],
-          ),
-        ),
-      ],
     );
   }
 }
