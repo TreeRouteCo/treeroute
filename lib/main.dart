@@ -5,10 +5,12 @@ import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/private/keys.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:treeroute/pages/edit_profile.dart';
 import 'package:treeroute/pages/map.dart';
 import 'package:treeroute/theme/dark_theme.dart';
 import 'package:treeroute/theme/light_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
+
 
 void main() async {
   await _initializeHERESDK();
@@ -60,6 +62,12 @@ final Provider<BeamerDelegate> beamerDelegateProvider =
     locationBuilder: RoutesLocationBuilder(
       routes: {
         '/map': (context, state, data) => const MapPage(),
+        '/edit-profile/:id': (context, state, data) => BeamPage(
+              key: ValueKey('editProfile-${state.pathParameters['id']}'),
+              child: EditProfilePage(
+                uidToEdit: state.pathParameters['id'] ?? '',
+              ),
+            ),
       },
     ),
   ),

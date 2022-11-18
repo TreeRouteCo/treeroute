@@ -113,13 +113,13 @@ class UserProvider extends StateNotifier<UserState> {
         .eq('uid', id)
         .maybeSingle() as Map<String, dynamic>?;
 
-    if (response == null || userAttributesResponse == null) {
+    if (response == null) {
       setLoading(false);
       return null;
     } else {
       final profile = Profile.fromMap({
         ...response,
-        ...userAttributesResponse,
+        ...userAttributesResponse ?? {},
       });
       if (loggedInId == id) {
         setProfile(profile);
@@ -144,8 +144,7 @@ class UserProvider extends StateNotifier<UserState> {
       }
 
       // This is also enforced on the backend. (Good try tho <3).
-      if (uid != state.user!.id &&
-          (state.profile?.admin ?? false)) {
+      if (uid != state.user!.id && (state.profile?.admin ?? false)) {
         setLoading(false);
         throw "User is not authorized to update this user's profile";
       }
@@ -153,6 +152,7 @@ class UserProvider extends StateNotifier<UserState> {
       newUser = await Supabase.instance.client
           .from('users')
           .upsert({
+            'uid': uid,
             'first_name': userAccount.firstName,
             'last_name': userAccount.lastName,
             'username': userAccount.username,
