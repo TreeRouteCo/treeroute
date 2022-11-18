@@ -1,6 +1,5 @@
 import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:treeroute/widgets/common/snackbar.dart';
 
@@ -23,7 +22,7 @@ class _UserCircleState extends ConsumerState<UserCircle> {
     final userState = ref.watch(userProvider);
 
     if (userState.profile != null && !loggedIn) {
-      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      /*WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         progressSnackbar(
           context,
           "Welcome back, "
@@ -34,13 +33,11 @@ class _UserCircleState extends ConsumerState<UserCircle> {
           ),
         );
       });
-      loggedIn = true;
+      loggedIn = true;*/
     } else if (userState.profile == null &&
         !userState.loading &&
         userState.user != null) {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        print(
-            "User profile not found: Beaming to /edit-profile/${userState.user?.id}");
         Beamer.of(context).beamToNamed('/edit-profile/${userState.user?.id}');
       });
     } else if (authState.session == null && loggedIn) {
