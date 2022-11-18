@@ -54,10 +54,13 @@ class PlaceProvider extends StateNotifier<PlaceState> {
   void searchPlaces(String query) async {
     state = state.copyWith(searchQuery: query, isLoading: true);
     try {
-      final response = await Supabase.instance.client
-          .rpc("search_location", params: {"location_term": query});
-      final places = response.map((e) => Place.fromMap(e)).toList();
-      state = state.copyWith(places: places, isLoading: false);
+      final response = await Supabase.instance.client.rpc("search_location",
+          params: {"location_term": query}) as List<dynamic>;
+      final places =
+          response.map((e) => Place.fromMap(e)).toList(growable: false);
+      if (places.isNotEmpty) {
+        state = state.copyWith(places: places, isLoading: false);
+      }
     } on PostgrestException catch (e) {
       state = state.copyWith(error: e.message, isLoading: false);
     } catch (e) {

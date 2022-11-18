@@ -21,7 +21,7 @@ class Place {
 
   String? description;
   String? address;
-  String? postalCode;
+  int? postalCode;
   String? state;
   String? city;
 
@@ -65,7 +65,7 @@ class Place {
     String? imageUrl,
     String? description,
     String? address,
-    String? postalCode,
+    int? postalCode,
     String? state,
     String? city,
     List<String>? departments,
@@ -124,24 +124,26 @@ class Place {
   factory Place.fromMap(Map<String, dynamic> map) {
     return Place(
       id: map['id']?.toInt() ?? 0,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(
-          map['createdAt'] ?? map['created_at']),
+      createdAt: DateTime.parse(map['createdAt'] ?? map['created_at']),
       createdBy: map['createdBy'] ?? map["created_by"] ?? '',
       updatedAt: map['updatedAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
+          ? DateTime.parse(
               map['updatedAt'] ?? map['updated_at'] ?? map['last_updated_at'],
             )
           : null,
       updatedBy:
           map['updatedBy'] ?? map["updated_by"] ?? map["last_updated_by"] ?? '',
-      campusId:
-          map['campusId']?.toInt() ?? map["campus_id"] ?? map["campus_id"] ?? 0,
+      campusId: map['campusId']?.toInt() ??
+          map["campus_id"] ??
+          map["campus_id"] ??
+          map["campus"] ??
+          0,
       slug: map['slug'] ?? '',
       name: map['name'],
       aka: List<String>.from(map['aka']),
       geoCoordinates: GeoCoordinates(
         map["geoloc"]["lat"],
-        map["geoloc"]["long"],
+        map["geoloc"]["lon"],
       ),
       type: List<String>.from(map['type']),
       imageUrl: map['imageUrl'] ?? map["image_url"] ?? '',
