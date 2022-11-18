@@ -20,7 +20,7 @@ final accountProvider = StateNotifierProvider<AccountProvider, Account?>((ref) {
 });*/
 
 final locationProvider =
-    StateNotifierProvider<LocationProvider, LocationState>((ref) {
+    StateNotifierProvider.autoDispose<LocationProvider, LocationState>((ref) {
   return LocationProvider(ref);
 });
 

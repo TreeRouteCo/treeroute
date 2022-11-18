@@ -67,9 +67,7 @@ class _MapPageState extends ConsumerState<MapPage> {
               const Positioned(
                 top: 10,
                 left: 10,
-                child: UserCircle(
-                  key: Key("map-user-circle"),
-                ),
+                child: UserCircle(),
               ),
               /*if (locationState.latestLocation?.speed != null &&
                   locationState.isLocating)

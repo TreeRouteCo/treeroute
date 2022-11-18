@@ -128,6 +128,9 @@ class LocationProvider extends StateNotifier<LocationState> {
   here_core.GeoCoordinates? _selectedCoords;
   here_map.MapMarker? _selectedMarker;
 
+  StreamSubscription<CompassEvent>? _compassSub;
+  StreamSubscription<LocationData>? _locationSub;
+
   Future<PermissionStatus> checkPermission() async {
     state = state.copyWith(
       permissionState: await state.locator.hasPermission(),
@@ -244,15 +247,17 @@ class LocationProvider extends StateNotifier<LocationState> {
     _locIndicator ??= here_map.LocationIndicator();
     state.mapController?.addLifecycleListener(_locIndicator!);
 
-    FlutterCompass.events?.listen((event) {
+    _compassSub = FlutterCompass.events?.listen((event) {
       state = state.copyWith(compass: event);
     });
 
-    return state.locator.onLocationChanged
-        .listen((LocationData currentLocation) {
+    _locationSub =
+        state.locator.onLocationChanged.listen((LocationData currentLocation) {
       state = state.copyWith(latestLocation: currentLocation, isLocating: true);
       _updateMap(currentLocation);
     });
+
+    return _locationSub!;
   }
 
   void flyTo({
@@ -370,5 +375,19 @@ class LocationProvider extends StateNotifier<LocationState> {
         throw error;
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _locIndicator?.disable();
+    _locIndicator = null;
+    _photoMapImage = null;
+    _selectedMarker = null;
+    _selectedCoords = null;
+    _locationSub?.cancel();
+    _locationSub = null;
+    _compassSub?.cancel();
+    _compassSub = null;
+    super.dispose();
   }
 }
