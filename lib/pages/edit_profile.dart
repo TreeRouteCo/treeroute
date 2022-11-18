@@ -19,6 +19,7 @@ class EditProfilePage extends StatefulHookConsumerWidget {
 
 class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   Profile? profile;
+  Profile? originalProfile;
   List<Campus> campuses = [];
   var loading = true;
   var updating = false;
@@ -53,11 +54,13 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     try {
       if (userState.user?.id == widget.uidToEdit && profile == null) {
         profile = userState.profile ?? Profile(campusId: 1);
+        originalProfile = profile?.copyWith();
         loading = false;
         setState(() {});
       } else if (userState.user?.id != widget.uidToEdit && profile == null) {
         WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-          profile = await userProv.getProfile(id: widget.uidToEdit);
+          profile ??= await userProv.getProfile(id: widget.uidToEdit);
+          originalProfile = profile?.copyWith();
           loading = false;
           setState(() {});
         });
@@ -81,40 +84,47 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
           SliverAppBar.large(
             leading: IconButton(
               icon: const Icon(Icons.chevron_left_rounded),
-              onPressed: () {
-                Beamer.of(context).beamBack();
-              },
+              onPressed: updating || userState.profile == null
+                  ? null
+                  : () {
+                      Beamer.of(context).beamBack();
+                    },
             ),
             title: const Text('Edit Profile'),
             actions: <Widget>[
               IconButton(
                 icon: const Icon(Icons.check_rounded),
-                onPressed: () async {
-                  if (formKey.currentState!.validate()) {
-                    setState(() {
-                      updating = true;
-                    });
-                    try {
-                      await userProv.updateProfile(
-                        profile!,
-                        uid: widget.uidToEdit,
-                      );
-                      if (userState.user?.id == widget.uidToEdit) {
-                        await userProv.getProfile();
-                      }
-                    } catch (e) {
-                      error = true;
-                    }
+                onPressed: (updating || loading)
+                    ? null
+                    : () async {
+                        if (formKey.currentState!.validate()) {
+                          setState(() {
+                            updating = true;
+                          });
+                          if (profile != originalProfile) {
+                            try {
+                              await userProv.updateProfile(
+                                profile!,
+                                uid: widget.uidToEdit,
+                              );
+                              if (userState.user?.id == widget.uidToEdit) {
+                                await userProv.getProfile();
+                              }
+                            } catch (e) {
+                              print(e);
+                              error = true;
+                            }
+                          }
 
-                    setState(() {
-                      updating = false;
-                    });
+                          setState(() {
+                            updating = false;
+                          });
 
-                    if (mounted && !error) {
-                      Beamer.of(context).beamBack();
-                    }
-                  }
-                },
+                          if (mounted && !error) {
+                            Beamer.of(context).beamBack();
+                          }
+                        }
+                      },
               ),
             ],
           ),
@@ -341,25 +351,26 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                 style: Theme.of(context).textTheme.subtitle1,
                               ),
                               const SizedBox(height: 20),
-                              DropdownButtonFormField<String>(
-                                value: (profile!.campusId).toString(),
-                                decoration: const InputDecoration(
-                                  labelText: 'Campus',
-                                  border: OutlineInputBorder(),
+                              if (campuses.length > 1)
+                                DropdownButtonFormField<int>(
+                                  value: profile?.campusId ?? 1,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Campus',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  items: campuses.map<DropdownMenuItem<int>>(
+                                      (Campus value) {
+                                    return DropdownMenuItem<int>(
+                                      value: value.id,
+                                      child: Text(value.name),
+                                    );
+                                  }).toList(),
+                                  onChanged: (int? newValue) {
+                                    setState(() {
+                                      profile?.campusId = newValue;
+                                    });
+                                  },
                                 ),
-                                items: campuses.map<DropdownMenuItem<String>>(
-                                    (Campus value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value.id.toString(),
-                                    child: Text(value.name),
-                                  );
-                                }).toList(),
-                                onChanged: (String? newValue) {
-                                  setState(() {
-                                    profile?.campusId = int.parse(newValue!);
-                                  });
-                                },
-                              ),
                               if (userState.profile?.admin ?? false) ...[
                                 const SizedBox(height: 20),
                                 const VerticalDivider(),
