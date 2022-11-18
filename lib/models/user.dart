@@ -76,7 +76,7 @@ class Profile {
       admin: map['admin'] ?? false,
       elevationDescription:
           map['elevationDescription'] ?? map['elevation_description'],
-      campusId: map['campusId'] ?? map['campus_id'],
+      campusId: map['campusId'] ?? map['campus_id'] ?? map['campus'],
     );
   }
 
