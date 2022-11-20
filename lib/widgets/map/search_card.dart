@@ -62,9 +62,15 @@ class _SearchCardState extends ConsumerState<SearchCard> {
                               ),
                               controller: textController,
                               onChanged: (value) {
-                                ref
-                                    .read(placeProvider.notifier)
-                                    .searchPlaces(value);
+                                if (value.isEmpty) {
+                                  ref
+                                      .read(placeProvider.notifier)
+                                      .clearSearchQuery();
+                                } else {
+                                  ref
+                                      .read(placeProvider.notifier)
+                                      .searchPlaces(value);
+                                }
                               },
                             ),
                           ),
