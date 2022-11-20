@@ -21,51 +21,87 @@ class _SearchCardState extends ConsumerState<SearchCard> {
       text: searchState.searchQuery,
     );
 
-    return SizedBox(
-      child: Column(
-        children: [
-          SizedBox(
-            height: 70,
-            child: Card(
-              margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const BrandIcon(
-                      width: 20,
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    Expanded(
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'Search',
-                        ),
-                        controller: textController,
-                        onChanged: (value) {
-                          ref.read(placeProvider.notifier).searchPlaces(value);
-                        },
-                      ),
-                    ),
-                    if (textController.text != "")
-                      IconButton(
-                        onPressed: () {
-                          ref.read(placeProvider.notifier).clearSearchQuery();
-                          ref.read(placeProvider.notifier).clearSelectedPlace();
-                          textController.clear();
-                        },
-                        icon: const Icon(Icons.clear),
-                      ),
-                  ],
-                ),
-              ),
-            ),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+      // Decoration should be card shadow
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).shadowColor.withOpacity(0.5),
+            spreadRadius: -5,
+            blurRadius: 10,
           ),
         ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                SizedBox(
+                  height: 60,
+                  child: Card(
+                    margin: EdgeInsets.zero,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const BrandIcon(
+                            width: 20,
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Expanded(
+                            child: TextField(
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                hintText: 'Search',
+                              ),
+                              controller: textController,
+                              onChanged: (value) {
+                                ref
+                                    .read(placeProvider.notifier)
+                                    .searchPlaces(value);
+                              },
+                            ),
+                          ),
+                          if (textController.text != "")
+                            IconButton(
+                              onPressed: () {
+                                ref
+                                    .read(placeProvider.notifier)
+                                    .clearSearchQuery();
+                                ref
+                                    .read(placeProvider.notifier)
+                                    .clearSelectedPlace();
+                                textController.clear();
+                              },
+                              icon: const Icon(Icons.clear),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // If loading, show loading indicator
+            if (searchState.isLoading)
+              const Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: LinearProgressIndicator(
+                    minHeight: 5,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

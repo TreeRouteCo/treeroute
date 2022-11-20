@@ -38,7 +38,7 @@ class PlaceState {
       places: places,
       selectedPlace: null,
       searchQuery: searchQuery,
-      isLoading: isLoading,
+      isLoading: false,
       error: error,
     );
   }
@@ -66,18 +66,25 @@ class PlaceProvider extends StateNotifier<PlaceState> {
   }
 
   void clearSearchQuery() {
-    state = state.copyWith(searchQuery: '', places: []);
+    state = state.copyWith(searchQuery: '', places: [], isLoading: false);
   }
 
   void searchPlaces(String query) async {
     state = state.copyWith(searchQuery: query, isLoading: true);
+    if (query.isEmpty) {
+      state = state.copyWith(places: [], isLoading: false);
+      return;
+    }
     try {
       final response = await Supabase.instance.client.rpc("search_location",
           params: {"location_term": query}) as List<dynamic>;
       final places =
           response.map((e) => Place.fromMap(e)).toList(growable: false);
-      if (places.isNotEmpty) {
+      // Debounce the search
+      if (places.isNotEmpty && query == state.searchQuery) {
         state = state.copyWith(places: places, isLoading: false);
+      } else {
+        state = state.copyWith(isLoading: false);
       }
     } on PostgrestException catch (e) {
       state = state.copyWith(error: e.message, isLoading: false);
