@@ -32,6 +32,16 @@ class PlaceState {
       error: error ?? this.error,
     );
   }
+
+  PlaceState clearSelectedPlace() {
+    return PlaceState(
+      places: places,
+      selectedPlace: null,
+      searchQuery: searchQuery,
+      isLoading: isLoading,
+      error: error,
+    );
+  }
 }
 
 class PlaceProvider extends StateNotifier<PlaceState> {
@@ -49,6 +59,14 @@ class PlaceProvider extends StateNotifier<PlaceState> {
 
   void selectPlace(Place place) {
     state = state.copyWith(selectedPlace: place);
+  }
+
+  void clearSelectedPlace() {
+    state = state.clearSelectedPlace();
+  }
+
+  void clearSearchQuery() {
+    state = state.copyWith(searchQuery: '', places: []);
   }
 
   void searchPlaces(String query) async {

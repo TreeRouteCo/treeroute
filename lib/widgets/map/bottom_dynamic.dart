@@ -15,8 +15,8 @@ class BottomDynamicCard extends StatefulHookConsumerWidget {
 class _BottomDynamicCardState extends ConsumerState<BottomDynamicCard> {
   @override
   Widget build(BuildContext context) {
-    final search = ref.watch(searchProvider);
-    final searchNotifier = ref.read(searchProvider.notifier);
+    final search = ref.watch(placeProvider);
+    final searchNotifier = ref.read(placeProvider.notifier);
 
     final locationNotifier = ref.read(locationProvider.notifier);
 
@@ -33,19 +33,18 @@ class _BottomDynamicCardState extends ConsumerState<BottomDynamicCard> {
           margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            height: (search.suggestions.isEmpty &&
-                    search.selectedSuggestion == null)
+            height: (search.places.isEmpty && search.selectedPlace == null)
                 ? 0
-                : search.selectedSuggestion != null
+                : search.selectedPlace != null
                     ? 100
                     : 250,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               // Search results
-              child: search.selectedSuggestion == null
+              child: search.selectedPlace == null
                   ? ListView.builder(
                       shrinkWrap: true,
-                      itemCount: search.suggestions.length + 1,
+                      itemCount: search.places.length + 1,
                       itemBuilder: (context, index) {
                         if (index == 0) {
                           return Padding(
@@ -59,15 +58,12 @@ class _BottomDynamicCardState extends ConsumerState<BottomDynamicCard> {
                         }
                         index--;
                         return ListTile(
-                          title: Text(search.suggestions[index].title),
-                          subtitle: Text(search.suggestions[index].place
-                                  ?.address.addressText ??
-                              ''),
+                          title: Text(search.places[index].name ?? "No Name"),
+                          subtitle: Text(search.places[index].address ?? ''),
                           onTap: () {
-                            searchNotifier
-                                .selectSuggestion(search.suggestions[index]);
+                            searchNotifier.selectPlace(search.places[index]);
                             locationNotifier.addMarker(
-                              search.suggestions[index].place!.geoCoordinates!,
+                              search.places[index].geoCoordinates,
                               shouldFly: true,
                             );
                             setState(() {});
@@ -83,12 +79,12 @@ class _BottomDynamicCardState extends ConsumerState<BottomDynamicCard> {
                             IconButton(
                               icon: const Icon(Icons.arrow_back),
                               onPressed: () {
-                                searchNotifier.clearSelectedSuggestion();
+                                searchNotifier.clearSelectedPlace();
                               },
                             ),
                             Expanded(
                               child: Text(
-                                search.selectedSuggestion!.title,
+                                search.selectedPlace!.name ?? "No Name",
                                 style: Theme.of(context).textTheme.headline6,
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
@@ -107,8 +103,8 @@ class _BottomDynamicCardState extends ConsumerState<BottomDynamicCard> {
                                 locationNotifier.startNavModeCamera();
 
                                 ref.read(routingProvider.notifier).addRoute(
-                                      endCoords: search.selectedSuggestion!
-                                          .place!.geoCoordinates!,
+                                      endCoords:
+                                          search.selectedPlace!.geoCoordinates,
                                       isBiking: false,
                                     );
                               },

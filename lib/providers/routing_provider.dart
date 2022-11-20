@@ -4,9 +4,10 @@ import 'package:here_sdk/core.dart' as here_core;
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart' as here_map;
 import 'package:here_sdk/routing.dart' as here_route;
-import 'package:here_sdk/search.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:treeroute/providers/providers.dart';
+
+import '../models/place.dart';
 
 class RouteState {
   final here_route.RoutingEngine? routingEngine;
@@ -15,7 +16,7 @@ class RouteState {
   final List<here_route.Waypoint>? waypoints;
   final here_core.GeoCoordinates? start;
   final here_core.GeoCoordinates? end;
-  final Suggestion? destination;
+  final Place? destination;
   final int? durationInSecs;
   final int? distanceInMeters;
 
@@ -38,7 +39,7 @@ class RouteState {
     List<here_route.Waypoint>? waypoints,
     here_core.GeoCoordinates? start,
     here_core.GeoCoordinates? end,
-    Suggestion? destination,
+    Place? destination,
     int? durationInSecs,
     int? distanceInMeters,
   }) {
@@ -169,7 +170,7 @@ class RoutingProvider extends StateNotifier<RouteState> {
               20,
               Colors.green,
             ),
-            destination: ref.read(searchProvider).selectedSuggestion,
+            destination: ref.read(placeProvider).selectedPlace!,
             distanceInMeters: route.lengthInMeters,
             durationInSecs: route.duration.inSeconds,
           );
@@ -257,7 +258,7 @@ class RoutingProvider extends StateNotifier<RouteState> {
     List<here_route.Waypoint>? waypoints,
     here_core.GeoCoordinates? start,
     here_core.GeoCoordinates? end,
-    Suggestion? destination,
+    Place? destination,
   }) {
     return RouteState(
       routingEngine: routingEngine ?? state.routingEngine,

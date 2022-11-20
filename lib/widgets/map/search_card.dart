@@ -15,7 +15,7 @@ class SearchCard extends StatefulHookConsumerWidget {
 class _SearchCardState extends ConsumerState<SearchCard> {
   @override
   Widget build(BuildContext context) {
-    final searchState = ref.watch(searchProvider);
+    final searchState = ref.watch(placeProvider);
 
     final textController = useTextEditingController(
       text: searchState.searchQuery,
@@ -47,19 +47,15 @@ class _SearchCardState extends ConsumerState<SearchCard> {
                         ),
                         controller: textController,
                         onChanged: (value) {
-                          ref
-                              .read(searchProvider.notifier)
-                              .searchSuggestions(value, (error, sugg) {});
-                        },
-                        onTap: () {
-                          //ref.read(locationProvider.notifier).search();
+                          ref.read(placeProvider.notifier).searchPlaces(value);
                         },
                       ),
                     ),
                     if (textController.text != "")
                       IconButton(
                         onPressed: () {
-                          ref.read(searchProvider.notifier).clearSearch();
+                          ref.read(placeProvider.notifier).clearSearchQuery();
+                          ref.read(placeProvider.notifier).clearSelectedPlace();
                           textController.clear();
                         },
                         icon: const Icon(Icons.clear),
