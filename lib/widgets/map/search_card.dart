@@ -55,35 +55,44 @@ class _SearchCardState extends ConsumerState<SearchCard> {
                             width: 10,
                           ),
                           Expanded(
-                            child: TextField(
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                hintText: 'Search',
-                              ),
-                              controller: textController,
-                              onChanged: (value) {
-                                if (value.isEmpty) {
-                                  ref
-                                      .read(placeProvider.notifier)
-                                      .clearSearchQuery();
-                                } else {
-                                  ref
-                                      .read(placeProvider.notifier)
-                                      .searchPlaces(value);
-                                }
-                              },
-                            ),
+                            child: searchState.selectedPlace == null
+                                ? TextField(
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: 'Search',
+                                    ),
+                                    controller: textController,
+                                    onChanged: (value) {
+                                      if (value.isEmpty) {
+                                        ref
+                                            .read(placeProvider.notifier)
+                                            .clearSearchQuery();
+                                      } else {
+                                        ref
+                                            .read(placeProvider.notifier)
+                                            .searchPlaces(value);
+                                      }
+                                    },
+                                  )
+                                : Text(
+                                    textController.text,
+                                    maxLines: 1,
+                                  ),
                           ),
                           if (textController.text != "")
                             IconButton(
                               onPressed: () {
-                                ref
-                                    .read(placeProvider.notifier)
-                                    .clearSearchQuery();
-                                ref
-                                    .read(placeProvider.notifier)
-                                    .clearSelectedPlace();
-                                textController.clear();
+                                if (searchState.selectedPlace != null) {
+                                  ref
+                                      .read(placeProvider.notifier)
+                                      .clearSelectedPlace();
+                                } else {
+                                  ref
+                                      .read(placeProvider.notifier)
+                                      .clearSearchQuery();
+
+                                  textController.clear();
+                                }
                               },
                               icon: const Icon(Icons.clear),
                             ),

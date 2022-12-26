@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:treeroute/providers/providers.dart';
 import 'package:treeroute/widgets/map/route_card.dart';
 import 'package:treeroute/widgets/map/search_card.dart';
+import 'package:treeroute/widgets/map/slected_place_card.dart';
 
 class BottomDynamicCard extends StatefulHookConsumerWidget {
   const BottomDynamicCard({super.key});
@@ -71,50 +72,7 @@ class _BottomDynamicCardState extends ConsumerState<BottomDynamicCard> {
                         );
                       },
                     )
-                  : Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.arrow_back),
-                              onPressed: () {
-                                searchNotifier.clearSelectedPlace();
-                              },
-                            ),
-                            Expanded(
-                              child: Text(
-                                search.selectedPlace!.name ?? "No Name",
-                                style: Theme.of(context).textTheme.headline6,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 48,
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            OutlinedButton.icon(
-                              onPressed: () {
-                                locationNotifier.startNavModeCamera();
-
-                                ref.read(routingProvider.notifier).addRoute(
-                                      endCoords:
-                                          search.selectedPlace!.geoCoordinates,
-                                      isBiking: false,
-                                    );
-                              },
-                              icon: const Icon(Icons.directions),
-                              label: const Text('Navigate'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                  : const SelectedPlaceCard(),
             ),
           ),
         ),

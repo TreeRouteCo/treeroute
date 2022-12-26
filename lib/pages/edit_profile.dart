@@ -111,7 +111,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                 await userProv.getProfile();
                               }
                             } catch (e) {
-                              print(e);
                               error = true;
                             }
                           }
@@ -298,6 +297,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                   } else if (value.length < 3) {
                                     return 'Username must be at least 3 characters';
                                   }
+
+                                  return null;
                                 },
                                 textInputAction: TextInputAction.next,
                                 focusNode: usernameFocusNode,
@@ -333,6 +334,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                   if (value.length > 200) {
                                     return 'Bio must be less than 200 characters';
                                   }
+
+                                  return null;
                                 },
                                 textInputAction: TextInputAction.newline,
                                 focusNode: bioFocusNode,
